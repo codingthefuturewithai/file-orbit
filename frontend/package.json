@@ -1,5 +1,5 @@
 {
-  "name": "pbs-rclone-mvp-frontend",
+  "name": "ctf-rclone-mvp-frontend",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

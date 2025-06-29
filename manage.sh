@@ -3,8 +3,6 @@
 # CTF Rclone MVP Management Script
 # Usage: ./manage.sh [start|stop|restart|status|logs] [service]
 
-set -e
-
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -15,49 +13,100 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BACKEND_DIR="$SCRIPT_DIR/backend"
 FRONTEND_DIR="$SCRIPT_DIR/frontend"
+LOG_DIR="$SCRIPT_DIR/logs"
 
 # PID file locations
 PID_DIR="$SCRIPT_DIR/.pids"
 mkdir -p "$PID_DIR"
+mkdir -p "$LOG_DIR"
 
 # Service definitions
-# Note: We use a function instead of associative array for macOS compatibility
-get_service_description() {
+get_service_port() {
     case "$1" in
-        docker) echo "Docker containers" ;;
-        backend) echo "FastAPI backend" ;;
-        frontend) echo "React frontend" ;;
-        worker) echo "Job processor" ;;
-        event-monitor) echo "Event monitor" ;;
-        scheduler) echo "Scheduler service" ;;
-        *) echo "Unknown service" ;;
+        backend) echo 8000 ;;
+        frontend) echo 3000 ;;
+        *) echo "" ;;
     esac
 }
 
 # Check if virtual environment exists
 check_venv() {
     if [ ! -d "$BACKEND_DIR/venv" ]; then
-        echo -e "${RED}Error: Virtual environment not found at $BACKEND_DIR/venv${NC}"
-        echo "Please create it with: cd $BACKEND_DIR && python -m venv venv && source venv/bin/activate && pip install -r requirements.txt"
-        exit 1
+        echo -e "${YELLOW}Creating Python virtual environment...${NC}"
+        cd "$BACKEND_DIR"
+        python3 -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+        cd "$SCRIPT_DIR"
     fi
 }
 
-# Check if a service is running
-check_if_running() {
+# Check if a service is running by checking the PID file
+is_running_pid() {
     local service=$1
     local pid_file="$PID_DIR/$service.pid"
-    
     if [ -f "$pid_file" ]; then
-        PID=$(cat "$pid_file")
-        if ps -p $PID > /dev/null 2>&1; then
-            return 0  # Service is running
+        local pid
+        pid=$(cat "$pid_file")
+        if ps -p "$pid" > /dev/null 2>&1; then
+            return 0 # Running
         fi
     fi
-    return 1  # Service is not running
+    return 1 # Not running
+}
+
+# Check if a port is in use
+is_port_in_use() {
+    local port=$1
+    if [ -z "$port" ]; then
+        return 1 # No port to check
+    fi
+    # lsof returns 0 if process found, 1 if not
+    if lsof -i :"$port" > /dev/null 2>&1; then
+        return 0 # Port is in use
+    fi
+    return 1 # Port is free
 }
 
 # Start services
+start_service() {
+    local service=$1
+    local start_command=$2
+    local log_file="$LOG_DIR/$service.log"
+    local pid_file="$PID_DIR/$service.pid"
+    local port
+
+    port=$(get_service_port "$service")
+
+    if is_running_pid "$service"; then
+        echo -e "${YELLOW}$service is already running.${NC}"
+        return 0
+    fi
+
+    if is_port_in_use "$port"; then
+        echo -e "${RED}Port $port for $service is already in use by another process.${NC}"
+        return 1
+    fi
+
+    echo -e "${YELLOW}Starting $service...${NC}"
+    
+    # Execute the start command in the background
+    eval "$start_command" > "$log_file" 2>&1 &
+    local pid=$!
+    echo "$pid" > "$pid_file"
+
+    sleep 3 # Wait a moment for the service to potentially fail
+
+    if ! ps -p "$pid" > /dev/null 2>&1; then
+        echo -e "${RED}$service failed to start. Check logs: ./manage.sh logs $service${NC}"
+        rm -f "$pid_file"
+        return 1
+    fi
+
+    echo -e "${GREEN}$service started successfully (PID: $pid).${NC}"
+    return 0
+}
+
 start_docker() {
     echo -e "${YELLOW}Starting Docker containers...${NC}"
     cd "$SCRIPT_DIR"
@@ -65,153 +114,52 @@ start_docker() {
     echo -e "${GREEN}Docker containers started${NC}"
 }
 
-start_backend() {
-    # Check if already running
-    if check_if_running "backend"; then
-        echo -e "${YELLOW}Backend is already running${NC}"
-        return 0
-    fi
+start_all_services() {
+    start_docker
+    sleep 5 # Wait for containers to initialize
     
     check_venv
-    echo -e "${YELLOW}Starting FastAPI backend...${NC}"
-    cd "$BACKEND_DIR"
-    source venv/bin/activate
-    nohup python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 > "$SCRIPT_DIR/logs/backend.log" 2>&1 &
-    local pid=$!
-    echo $pid > "$PID_DIR/backend.pid"
     
-    # Wait a moment and verify the process started
-    sleep 2
-    if ps -p $pid > /dev/null 2>&1; then
-        echo -e "${GREEN}Backend started on http://localhost:8000${NC}"
-    else
-        echo -e "${RED}Backend failed to start. Check logs with: $0 logs backend${NC}"
-        rm -f "$PID_DIR/backend.pid"
-        return 1
-    fi
-}
-
-start_frontend() {
-    # Check if already running
-    if check_if_running "frontend"; then
-        echo -e "${YELLOW}Frontend is already running${NC}"
-        return 0
-    fi
-    
-    echo -e "${YELLOW}Starting React frontend...${NC}"
-    cd "$FRONTEND_DIR"
-    nohup npm start > "$SCRIPT_DIR/logs/frontend.log" 2>&1 &
-    local pid=$!
-    echo $pid > "$PID_DIR/frontend.pid"
-    
-    # Wait a moment and verify the process started
-    sleep 3
-    if ps -p $pid > /dev/null 2>&1; then
-        echo -e "${GREEN}Frontend started on http://localhost:3000${NC}"
-    else
-        echo -e "${RED}Frontend failed to start. Check logs with: $0 logs frontend${NC}"
-        rm -f "$PID_DIR/frontend.pid"
-        return 1
-    fi
-}
-
-start_worker() {
-    # Check if already running
-    if check_if_running "worker"; then
-        echo -e "${YELLOW}Worker is already running${NC}"
-        return 0
-    fi
-    
-    check_venv
-    echo -e "${YELLOW}Starting worker...${NC}"
-    cd "$BACKEND_DIR"
-    source venv/bin/activate
-    nohup python worker.py > "$SCRIPT_DIR/logs/worker.log" 2>&1 &
-    local pid=$!
-    echo $pid > "$PID_DIR/worker.pid"
-    
-    # Wait a moment and verify the process started
-    sleep 2
-    if ps -p $pid > /dev/null 2>&1; then
-        echo -e "${GREEN}Worker started${NC}"
-    else
-        echo -e "${RED}Worker failed to start. Check logs with: $0 logs worker${NC}"
-        rm -f "$PID_DIR/worker.pid"
-        return 1
-    fi
-}
-
-start_event_monitor() {
-    # Check if already running
-    if check_if_running "event-monitor"; then
-        echo -e "${YELLOW}Event monitor is already running${NC}"
-        return 0
-    fi
-    
-    check_venv
-    echo -e "${YELLOW}Starting event monitor...${NC}"
-    cd "$BACKEND_DIR"
-    source venv/bin/activate
-    nohup python event_monitor_service.py > "$SCRIPT_DIR/logs/event-monitor.log" 2>&1 &
-    local pid=$!
-    echo $pid > "$PID_DIR/event-monitor.pid"
-    
-    # Wait a moment and verify the process started
-    sleep 2
-    if ps -p $pid > /dev/null 2>&1; then
-        echo -e "${GREEN}Event monitor started${NC}"
-    else
-        echo -e "${RED}Event monitor failed to start. Check logs with: $0 logs event-monitor${NC}"
-        rm -f "$PID_DIR/event-monitor.pid"
-        return 1
-    fi
-}
-
-start_scheduler() {
-    # Check if already running
-    if check_if_running "scheduler"; then
-        echo -e "${YELLOW}Scheduler is already running${NC}"
-        return 0
-    fi
-    
-    check_venv
-    echo -e "${YELLOW}Starting scheduler...${NC}"
-    cd "$BACKEND_DIR"
-    source venv/bin/activate
-    nohup python scheduler_service.py > "$SCRIPT_DIR/logs/scheduler.log" 2>&1 &
-    local pid=$!
-    echo $pid > "$PID_DIR/scheduler.pid"
-    
-    # Wait a moment and verify the process started
-    sleep 2
-    if ps -p $pid > /dev/null 2>&1; then
-        echo -e "${GREEN}Scheduler started${NC}"
-    else
-        echo -e "${RED}Scheduler failed to start. Check logs with: $0 logs scheduler${NC}"
-        rm -f "$PID_DIR/scheduler.pid"
-        return 1
-    fi
+    start_service "backend" "cd '$BACKEND_DIR' && source venv/bin/activate && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+    start_service "frontend" "cd '$FRONTEND_DIR' && npm start"
+    start_service "worker" "cd '$BACKEND_DIR' && source venv/bin/activate && python worker.py"
+    start_service "event-monitor" "cd '$BACKEND_DIR' && source venv/bin/activate && python event_monitor_service.py"
+    # start_service "scheduler" "cd '$BACKEND_DIR' && source venv/bin/activate && python scheduler_service.py"
 }
 
 # Stop services
 stop_service() {
     local service=$1
     local pid_file="$PID_DIR/$service.pid"
+    local port
     
+    port=$(get_service_port "$service")
+    echo -e "${YELLOW}Stopping $service...${NC}"
+
+    # Kill by PID file
     if [ -f "$pid_file" ]; then
-        PID=$(cat "$pid_file")
-        if ps -p $PID > /dev/null 2>&1; then
-            echo -e "${YELLOW}Stopping $service (PID: $PID)...${NC}"
-            kill $PID
-            rm "$pid_file"
-            echo -e "${GREEN}$service stopped${NC}"
+        local pid
+        pid=$(cat "$pid_file")
+        if ps -p "$pid" > /dev/null 2>&1; then
+            kill "$pid"
+            sleep 1
         else
-            echo -e "${YELLOW}$service not running (stale PID file)${NC}"
-            rm "$pid_file"
+            echo -e "${YELLOW}Stale PID file found for $service.${NC}"
         fi
-    else
-        echo -e "${YELLOW}$service not running${NC}"
+        rm -f "$pid_file"
     fi
+
+    # Kill any process using the port
+    if [ -n "$port" ]; then
+        local pids_on_port
+        pids_on_port=$(lsof -t -i:"$port")
+        if [ -n "$pids_on_port" ]; then
+            echo -e "${YELLOW}Force stopping process(es) on port $port...${NC}"
+            kill -9 "$pids_on_port"
+        fi
+    fi
+    
+    echo -e "${GREEN}$service stopped.${NC}"
 }
 
 stop_docker() {
@@ -221,30 +169,35 @@ stop_docker() {
     echo -e "${GREEN}Docker containers stopped${NC}"
 }
 
+stop_all_services() {
+    stop_service "scheduler"
+    stop_service "event-monitor"
+    stop_service "worker"
+    stop_service "frontend"
+    stop_service "backend"
+    stop_docker
+}
+
 # Check service status
 check_status() {
     local service=$1
     local pid_file="$PID_DIR/$service.pid"
-    
-    if [ -f "$pid_file" ]; then
-        PID=$(cat "$pid_file")
-        if ps -p $PID > /dev/null 2>&1; then
-            echo -e "${GREEN}✓ $service is running (PID: $PID)${NC}"
-            return 0
-        else
-            echo -e "${RED}✗ $service is not running (stale PID file)${NC}"
-            return 1
-        fi
+    local port
+    port=$(get_service_port "$service")
+
+    if is_running_pid "$service"; then
+        echo -e "${GREEN}✓ $service is running (PID: $(cat "$pid_file"))${NC}"
+    elif is_port_in_use "$port"; then
+        echo -e "${YELLOW}⚠ $service is not running via manage.sh, but port $port is in use.${NC}"
     else
         echo -e "${RED}✗ $service is not running${NC}"
-        return 1
     fi
 }
 
 check_docker_status() {
-    if docker ps | grep -q "ctf-rclone"; then
+    if docker-compose ps | grep -q "Up"; then
         echo -e "${GREEN}✓ Docker containers are running${NC}"
-        docker ps --format "table {{.Names}}\t{{.Status}}" | grep "ctf-rclone"
+        docker-compose ps
     else
         echo -e "${RED}✗ Docker containers are not running${NC}"
     fi
@@ -253,7 +206,7 @@ check_docker_status() {
 # View logs
 view_logs() {
     local service=$1
-    local log_file="$SCRIPT_DIR/logs/$service.log"
+    local log_file="$LOG_DIR/$service.log"
     
     if [ -f "$log_file" ]; then
         echo -e "${YELLOW}Showing last 50 lines of $service logs:${NC}"
@@ -266,26 +219,16 @@ view_logs() {
 # Main command handling
 case "$1" in
     start)
-        mkdir -p "$SCRIPT_DIR/logs"
         if [ -z "$2" ]; then
-            # Start all services
-            start_docker
-            sleep 5  # Wait for containers
-            start_backend
-            sleep 3  # Wait for backend
-            start_frontend
-            start_worker
-            start_event_monitor
-            # start_scheduler  # Uncomment when ready
+            start_all_services
         else
-            # Start specific service
             case "$2" in
                 docker) start_docker ;;
-                backend) start_backend ;;
-                frontend) start_frontend ;;
-                worker) start_worker ;;
-                event-monitor) start_event_monitor ;;
-                scheduler) start_scheduler ;;
+                backend) check_venv; start_service "backend" "cd '$BACKEND_DIR' && source venv/bin/activate && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000" ;;
+                frontend) start_service "frontend" "cd '$FRONTEND_DIR' && npm start" ;;
+                worker) check_venv; start_service "worker" "cd '$BACKEND_DIR' && source venv/bin/activate && python worker.py" ;;
+                event-monitor) check_venv; start_service "event-monitor" "cd '$BACKEND_DIR' && source venv/bin/activate && python event_monitor_service.py" ;;
+                scheduler) check_venv; start_service "scheduler" "cd '$BACKEND_DIR' && source venv/bin/activate && python scheduler_service.py" ;;
                 *) echo -e "${RED}Unknown service: $2${NC}"; exit 1 ;;
             esac
         fi
@@ -293,15 +236,8 @@ case "$1" in
     
     stop)
         if [ -z "$2" ]; then
-            # Stop all services
-            stop_service "scheduler"
-            stop_service "event-monitor"
-            stop_service "worker"
-            stop_service "frontend"
-            stop_service "backend"
-            stop_docker
+            stop_all_services
         else
-            # Stop specific service
             case "$2" in
                 docker) stop_docker ;;
                 backend|frontend|worker|event-monitor|scheduler) stop_service "$2" ;;
@@ -311,20 +247,27 @@ case "$1" in
         ;;
     
     restart)
-        $0 stop $2
-        sleep 2
-        $0 start $2
+        if [ -z "$2" ]; then
+            stop_all_services
+            echo -e "${YELLOW}Restarting all services...${NC}"
+            sleep 2
+            start_all_services
+        else
+            stop_service "$2"
+            echo -e "${YELLOW}Restarting $2...${NC}"
+            sleep 2
+            $0 start "$2"
+        fi
         ;;
     
     status)
         echo -e "${YELLOW}=== CTF Rclone MVP Status ===${NC}"
-        echo "CTF Rclone MVP Management Script"
         check_docker_status
-        check_status "backend" || true
-        check_status "frontend" || true
-        check_status "worker" || true
-        check_status "event-monitor" || true
-        check_status "scheduler" || true
+        check_status "backend"
+        check_status "frontend"
+        check_status "worker"
+        check_status "event-monitor"
+        check_status "scheduler"
         ;;
     
     logs)

@@ -15,7 +15,7 @@ function App() {
       <div className="App">
         <nav className="navbar">
           <div className="container">
-            <h1 className="logo">PBS Rclone MVP</h1>
+            <h1 className="logo">CTF Rclone MVP</h1>
             <ul className="nav-links">
               <li><Link to="/">Dashboard</Link></li>
               <li><Link to="/transfers">Transfers</Link></li>

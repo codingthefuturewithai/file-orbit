@@ -24,12 +24,11 @@ class Endpoint(Base):
     # Connection details (encrypted in production)
     config = Column(JSON, nullable=False)
     # Example configs:
-    # Local: {"path": "/mnt/storage"}
-    # SMB: {"host": "server.pbs.org", "share": "videos", "user": "pbsuser", "domain": "PBS"}
-    # S3: {"bucket": "pbs-videos", "region": "us-east-1", "access_key": "xxx"}
-    # SFTP: {"host": "sftp.pbs.org", "port": 22, "user": "pbsuser"}
-    
-    # Throttling configuration
+    # S3: {"provider": "s3", "access_key_id": "...", "secret_access_key": "...", "bucket": "my-bucket", "region": "us-east-1"}
+    # Local: {"path": "/path/to/dir"}
+    # SMB: {"host": "server.ctf.org", "share": "videos", "user": "ctfuser", "domain": "CTF"}
+
+    # Rate limiting settings for the endpoint
     max_concurrent_transfers = Column(Integer, default=5)
     max_bandwidth = Column(Integer, nullable=True)  # Bytes per second, null = unlimited
     

@@ -6,7 +6,7 @@ from pydantic import PostgresDsn, RedisDsn, validator
 class Settings(BaseSettings):
     # API Settings
     API_V1_STR: str = "/api/v1"
-    PROJECT_NAME: str = "PBS Rclone MVP"
+    PROJECT_NAME: str = "CTF Rclone MVP"
     
     # Security
     SECRET_KEY: str = "your-secret-key-here-change-in-production"

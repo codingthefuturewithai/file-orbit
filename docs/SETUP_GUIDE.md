@@ -19,127 +19,139 @@
 - At least 4GB free RAM
 - Rclone installed on your system (for testing)
 
-## Step-by-Step Setup
+## Quick Start Guide
 
-### 1. Clone and Navigate to MVP Directory
+For the simplest setup, use the `manage.sh` script to start all services and initialize the project.
 
+### Step 1: Clone the Repository
 ```bash
-cd /Users/tkitchens/projects/ctf/rclone-poc/mvp
+cd /Users/tkitchens/projects/consumer-apps/file-orbit
 ```
 
-### 2. Create Environment File
-
+### Step 2: Set Up Environment Variables
 ```bash
-# Copy the example environment file
 cp .env.example .env
 ```
 
-**Note about SECRET_KEY**: The default placeholder value is fine for local development. You only need to change it for production deployments. The current value will work for testing.
+### Step 3: Set Up the Backend
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
 
-### 3. Start Infrastructure Services
+2. Create a Python virtual environment:
+   ```bash
+   python3 -m venv venv
+   ```
 
+3. Activate the virtual environment:
+   ```bash
+   source venv/bin/activate
+   ```
+
+4. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+### Step 4: Set Up the Frontend
+1. Navigate to the frontend directory:
+   ```bash
+   cd ../frontend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+### Step 5: Start All Services
 ```bash
-# Start PostgreSQL, Redis, and Rclone RC
+./manage.sh start
+```
+
+### Step 6: Verify Services
+```bash
+./manage.sh status
+```
+
+- **Frontend (UI)**: [http://localhost:3000](http://localhost:3000)
+- **Backend (API)**: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
+
+# Detailed Setup Instructions
+
+For advanced users or troubleshooting, follow these detailed steps:
+
+## Step 1: Set Up Environment Variables
+```bash
+cp .env.example .env
+```
+
+## Step 2: Start Infrastructure Services
+```bash
 docker-compose up -d
-
-# Verify services are running
-docker-compose ps
-
-# Check logs if needed
-docker-compose logs -f
 ```
 
-Expected output:
-```
-NAME                    STATUS    PORTS
-ctf-rclone-postgres     running   0.0.0.0:5432->5432/tcp
-ctf-rclone-redis        running   0.0.0.0:6379->6379/tcp
-ctf-rclone-rc           running   0.0.0.0:5572->5572/tcp
-```
+## Step 3: Set Up the Backend
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
 
-### 4. Set Up the Backend
+2. Create a Python virtual environment:
+   ```bash
+   python3 -m venv venv
+   ```
 
+3. Activate the virtual environment:
+   ```bash
+   source venv/bin/activate
+   ```
+
+4. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+## Step 4: Initialize and Seed the Database
+1. Create the database tables:
+   ```bash
+   python init_db.py
+   ```
+
+2. Seed the database with test data:
+   ```bash
+   python seed_db.py
+   ```
+
+## Step 5: Start the Backend Server
 ```bash
-cd backend
-
-# Create Python virtual environment
-python3 -m venv venv
-
-# Activate virtual environment
-# On macOS/Linux:
-source venv/bin/activate
-# On Windows:
-# venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### 5. Initialize the Database
-
-```bash
-# Make sure you're in the backend directory with venv activated
-# Create the database tables
-python init_db.py
-
-# Optionally, add sample data for testing
-python seed_db.py
-```
-
-You should see:
-```
-Creating database tables...
-Database tables created successfully!
-
-Tables created:
-- jobs
-- transfers
-- endpoints
-- transfer_templates
-```
-
-### 6. Start the Backend Server
-
-```bash
-# Make sure you're in the backend directory with venv activated
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-You should see:
-```
-INFO:     Started server process
-INFO:     Waiting for application startup.
-INFO:     Starting up PBS Rclone MVP API...
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://0.0.0.0:8000
-```
+## Step 6: Set Up the Frontend
+1. Navigate to the frontend directory:
+   ```bash
+   cd ../frontend
+   ```
 
-### 7. Set Up the Frontend (New Terminal)
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-```bash
-# From the mvp directory
-cd frontend
-
-# Install dependencies
-npm install
-
-# This will take a few minutes the first time
-```
-
-### 8. Start the Frontend Development Server
-
-```bash
-# Make sure you're in the frontend directory
-npm start
-```
-
-The browser should automatically open to http://localhost:3000
+3. Start the frontend development server:
+   ```bash
+   npm start
+   ```
 
 ## Testing the Current State
 
 ### What Works Now:
 1. **Backend Health Check**: Visit http://localhost:8000/health
-   - Should return: `{"status":"healthy","service":"pbs-rclone-mvp","version":"0.1.0"}`
+   - Should return: `{"status":"healthy","service":"ctf-rclone-mvp","version":"0.1.0"}`
 
 2. **API Documentation**: Visit http://localhost:8000/docs
    - Shows interactive API documentation (but endpoints not implemented yet)
@@ -239,9 +251,9 @@ The worker service automatically handles `.partial` files:
 2. **Frontend logs**: Check browser console for errors
 3. **Database access**: Use Adminer at http://localhost:8080 (if enabled)
    - Server: `postgres`
-   - Username: `pbs_rclone`
-   - Password: `pbs_rclone_password`
-   - Database: `pbs_rclone`
+   - Username: `ctf_rclone`
+   - Password: `ctf_rclone_password`
+   - Database: `ctf_rclone`
 4. **Testing transfers**: Use `manage.sh` to start all services easily
 
 ## Summary

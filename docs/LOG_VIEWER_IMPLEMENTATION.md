@@ -29,7 +29,7 @@ class LogReader:
     """Service for reading and parsing log files"""
     
     def __init__(self):
-        self.log_dir = Path("/Users/tkitchens/projects/pbs/rclone-poc/mvp/logs")
+        self.log_dir = Path("/Users/tkitchens/projects/ctf/rclone-poc/mvp/logs")
         self.allowed_files = [
             "backend.log", 
             "worker.log", 
@@ -203,7 +203,7 @@ class LogStreamer:
     
     async def stream_log(self, websocket: WebSocket, filename: str):
         """Stream log file updates to websocket"""
-        filepath = Path(f"/Users/tkitchens/projects/pbs/rclone-poc/mvp/logs/{filename}")
+        filepath = Path(f"/Users/tkitchens/projects/ctf/rclone-poc/mvp/logs/{filename}")
         
         try:
             async with aiofiles.open(filepath, 'r') as f:

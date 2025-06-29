@@ -8,9 +8,9 @@ from app.core.config import settings
 class RedisManager:
     def __init__(self):
         self.redis: Optional[aioredis.Redis] = None
-        self.job_queue_key = "pbs_rclone:job_queue"
-        self.job_status_prefix = "pbs_rclone:job_status:"
-        self.endpoint_counters_prefix = "pbs_rclone:endpoint_counters:"
+        self.job_queue_key = "ctf_rclone:job_queue"
+        self.job_status_prefix = "ctf_rclone:job_status:"
+        self.endpoint_counters_prefix = "ctf_rclone:endpoint_counters:"
         
     async def connect(self):
         """Initialize Redis connection"""

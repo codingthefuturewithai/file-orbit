@@ -100,7 +100,7 @@ async def seed_transfer_templates(session: AsyncSession):
             event_type=EventType.S3_OBJECT_CREATED,
             is_active=True,
             source_config={
-                "bucket": "pbs-videos",
+                "bucket": "ctf-videos",
                 "prefix": "incoming/",
                 "suffix": ".mp4"
             },

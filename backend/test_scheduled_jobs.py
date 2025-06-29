@@ -259,8 +259,10 @@ async def check_job_executions():
 
 
 async def main():
-    """Main test function"""
-    print("PBS Rclone POC - Scheduled Jobs Test")
+    """
+    Main function to run the scheduled jobs test.
+    """
+    print("CTF Rclone POC - Scheduled Jobs Test")
     print("=" * 80)
     
     # Create test scheduled jobs

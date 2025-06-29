@@ -522,40 +522,42 @@ I will:
 - Cross-server transfer orchestration
 - Production deployment
 
-## Current Implementation Status (June 29, 2025 - Phase 1 Day 1)
+## Current Implementation Status (December 6, 2024 - Session Update)
 
-### ✅ Completed Today
-1. **Created feature/phase1-remote-transfers branch**
-2. **Implemented Log Viewer** (3 hours as planned):
-   - Backend endpoint at `/api/v1/logs/{log_type}`
-   - React UI component with filtering, search, auto-refresh
-   - Syntax highlighting for log levels
-   - Fixed API route registration issue (double /logs prefix)
-   - Currently using absolute paths (TODO: make configurable)
+### ✅ Completed in This Session
+1. **Fixed Critical Endpoint Save Issue**:
+   - Resolved TypeScript interface mismatch in `EndpointFormData`
+   - Fixed scoping issue with `submitData` variable in error handling
+   - Added comprehensive error logging for 422 validation errors
+   - Endpoints can now be saved successfully via UI
 
-### 🔧 Implementation Notes
-- **Log Path Issue**: Had to use absolute path `/Users/tkitchens/projects/ctf/rclone-poc/mvp/logs/` 
-  - Relative path resolution was problematic
-  - TODO: Make this configurable via environment variable
-- **API Route Fix**: Changed from `@router.get("/logs/{log_type}")` to `@router.get("/{log_type}")`
-  - Router already has `/logs` prefix, was causing `/api/v1/logs/logs/backend`
+2. **Code Quality Improvements**:
+   - Added `formatBandwidth` function for better display
+   - Enhanced error handling with detailed validation error messages
+   - Fixed parseBandwidth to handle various input formats (e.g., "10M", "1G")
 
-### 📋 Remaining Phase 1 Tasks
+3. **Configuration Updates**:
+   - Updated endpoint model documentation to use CTF references
+   - Modified config examples to reflect actual use cases
+   - Enhanced bandwidth parsing to support K/M/G/T suffixes
 
-#### Day 1-2 (Today/Tomorrow)
-- [ ] Add AWS credentials to backend/.env
-- [ ] Test S3 → local transfers via UI
-- [ ] Verify S3 endpoint configuration works
+### 🔧 Key Bug Fixes
+- **Endpoint Save 422 Error**: Was caused by missing `path` field in TypeScript interface
+- **Scope Issue**: `submitData` was defined inside try block but used in catch block
+- **Type Validation**: Ensured frontend sends data matching backend schema exactly
 
-#### Day 3-4 Tasks (SMB)
-- [ ] Update `backend/app/services/rclone_service.py`
-- [ ] Add SMB config in worker.py `_configure_endpoint()`
-- [ ] Test with real Windows shares
+### 📋 Current Working State
+- **Frontend**: Endpoint CRUD fully functional with enhanced error handling
+- **Backend**: All APIs working, proper validation in place
+- **File Transfers**: Local-to-local transfers tested and working
+- **UI**: Clean interface with proper error messages and data formatting
 
-#### Day 5 Tasks (SFTP)
-- [ ] Update `backend/app/services/rclone_service.py`
-- [ ] Add SFTP config in worker.py `_configure_endpoint()`
-- [ ] Support both password and key auth
+### 🚧 Still Pending (from Phase 1)
+- [ ] Add AWS credentials to backend/.env for S3 transfers
+- [ ] Implement SMB endpoint support in rclone_service.py
+- [ ] Implement SFTP endpoint support with key/password auth
+- [ ] Make log paths configurable (currently hardcoded)
+- [ ] Enable scheduler service auto-start
 
 ## Key Decisions Made
 

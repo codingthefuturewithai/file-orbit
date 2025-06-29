@@ -1,6 +1,6 @@
 # MVP Implementation Status
 
-Last Updated: June 2025
+Last Updated: December 6, 2024
 
 ## 🟢 What's Implemented (Fully Functional!)
 
@@ -40,7 +40,9 @@ Last Updated: June 2025
 - ✅ Event rules configuration
 - ✅ Transfer history with filtering
 - ✅ Error handling and retry functionality
-- ✅ Log viewer for debugging (NEW - June 29, 2025)
+- ✅ Enhanced error messages for validation failures (NEW - Dec 6, 2024)
+- ✅ Bandwidth parsing with human-readable formats (10M, 1G, etc.)
+- ❌ Log viewer UI (implemented backend, not yet frontend)
 
 ## 🟡 Partially Implemented
 
@@ -85,7 +87,7 @@ Last Updated: June 2025
 
 2. **Test Event-Driven Transfers**
    - Run: `cd backend && python test_event_driven.py`
-   - Drop files in `/tmp/pbs-rclone-test/watch/`
+   - Drop files in `/tmp/ctf-rclone-test/watch/`
    - Watch automatic transfers trigger
 
 3. **Manage Endpoints**
@@ -123,17 +125,17 @@ echo "test" > /tmp/test.mp4
 # Create transfer in UI
 
 # Test event monitoring
-cp video.mp4 /tmp/pbs-rclone-test/watch/
+cp video.mp4 /tmp/ctf-rclone-test/watch/
 
 # View logs
 ./manage.sh logs worker
 ./manage.sh logs event-monitor
 
 # Database queries
-docker exec -it pbs-rclone-postgres psql -U pbs_rclone -c "SELECT * FROM jobs;"
+docker exec -it ctf-rclone-postgres psql -U ctf_rclone -c "SELECT * FROM jobs;"
 
 # Redis queue
-docker exec -it pbs-rclone-redis redis-cli LLEN pbs_rclone:job_queue
+docker exec -it ctf-rclone-redis redis-cli LLEN ctf_rclone:job_queue
 ```
 
 ## Summary

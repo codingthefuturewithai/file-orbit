@@ -8,6 +8,9 @@
 - **Manual transfer creation via UI**
 - **Transfer history and monitoring**
 - **Basic job queue processing**
+- **Endpoint CRUD operations** - Full create, read, update, delete functionality
+- **Enhanced error handling** - Detailed validation messages in UI
+- **Bandwidth configuration** - Support for human-readable formats (10M, 1G, etc.)
 
 ### ❌ Not Working (Required for Production)
 - **S3 transfers** - Code exists, just needs AWS credentials in .env (30 min fix)

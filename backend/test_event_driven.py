@@ -113,7 +113,7 @@ async def setup_test_transfer_templates():
 async def trigger_file_events():
     """Create test files to trigger events"""
     watch_dir = "/tmp/ctf-rclone-test/watch"
-    source_dir = "/tmp/pbs-rclone-test/source"
+    source_dir = "/tmp/ctf-rclone-test/source"
     
     print(f"\nCreating test files in {watch_dir}")
     

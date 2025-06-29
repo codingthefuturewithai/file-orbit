@@ -49,6 +49,17 @@ const Endpoints: React.FC = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const formatBandwidth = (bytes: number | null): string => {
+    if (!bytes) return '';
+    
+    const k = 1024;
+    if (bytes < k) return bytes.toString();
+    if (bytes < k * k) return Math.round(bytes / k) + 'K';
+    if (bytes < k * k * k) return Math.round(bytes / (k * k)) + 'M';
+    if (bytes < k * k * k * k) return Math.round(bytes / (k * k * k)) + 'G';
+    return Math.round(bytes / (k * k * k * k)) + 'T';
+  };
+
   const handleAdd = () => {
     setEditingEndpoint(null);
     setFormData({
@@ -69,7 +80,7 @@ const Endpoints: React.FC = () => {
       type: endpoint.type,
       config: endpoint.config,
       max_concurrent_transfers: endpoint.max_concurrent_transfers,
-      max_bandwidth: endpoint.max_bandwidth?.toString() || '',
+      max_bandwidth: endpoint.max_bandwidth ? endpoint.max_bandwidth.toString() : '',
       is_active: endpoint.is_active
     });
     setShowModal(true);
@@ -92,20 +103,67 @@ const Endpoints: React.FC = () => {
     }
   };
 
+  const parseBandwidth = (bandwidth: string): number | null => {
+    if (!bandwidth) return null;
+    
+    // Parse bandwidth strings like "10M", "100M", "1G"
+    const match = bandwidth.match(/^(\d+(?:\.\d+)?)\s*([KMGT]?)$/i);
+    if (!match) {
+      // Try parsing as a plain number (bytes)
+      const num = parseInt(bandwidth);
+      return isNaN(num) ? null : num;
+    }
+    
+    const value = parseFloat(match[1]);
+    const unit = match[2].toUpperCase();
+    
+    const multipliers: { [key: string]: number } = {
+      '': 1,          // No unit = bytes
+      'K': 1024,      // Kilobytes
+      'M': 1024 * 1024,      // Megabytes
+      'G': 1024 * 1024 * 1024,  // Gigabytes
+      'T': 1024 * 1024 * 1024 * 1024  // Terabytes
+    };
+    
+    return Math.floor(value * (multipliers[unit] || 1));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Prepare the data for submission
+    const submitData = {
+      ...formData,
+      // Convert max_bandwidth to number or null
+      max_bandwidth: parseBandwidth(formData.max_bandwidth || '')
+    };
+    
     try {
       if (editingEndpoint) {
-        await api.put(`/endpoints/${editingEndpoint.id}`, formData);
+        await api.put(`/endpoints/${editingEndpoint.id}`, submitData);
       } else {
-        await api.post('/endpoints', formData);
+        await api.post('/endpoints', submitData);
       }
       setShowModal(false);
       await fetchEndpoints();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving endpoint:', error);
-      alert('Failed to save endpoint');
+      console.error('Request data:', submitData);
+      console.error('Response:', error.response?.data);
+      
+      // FastAPI returns validation errors in a specific format
+      let errorMessage = 'Failed to save endpoint';
+      if (error.response?.data?.detail) {
+        if (typeof error.response.data.detail === 'string') {
+          errorMessage = error.response.data.detail;
+        } else if (Array.isArray(error.response.data.detail)) {
+          // Validation errors come as an array
+          errorMessage = error.response.data.detail.map((err: any) => 
+            `${err.loc.join('.')}: ${err.msg}`
+          ).join('\n');
+        }
+      }
+      alert(errorMessage);
     }
   };
 

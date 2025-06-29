@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 
 const Settings: React.FC = () => {
   const [emailSettings, setEmailSettings] = useState({
-    smtp_host: 'smtp.pbs.org',
+    smtp_host: 'smtp.ctf.org',
     smtp_port: 587,
-    smtp_from: 'noreply@pbs.org',
+    smtp_from: 'noreply@ctf.org',
     smtp_tls: true,
     notification_email: ''
   });
@@ -68,7 +68,7 @@ const Settings: React.FC = () => {
             <input 
               type="email" 
               className="form-control"
-              placeholder="admin@pbs.org"
+              placeholder="admin@ctf.org"
               value={emailSettings.notification_email}
               onChange={(e) => setEmailSettings({...emailSettings, notification_email: e.target.value})}
             />
