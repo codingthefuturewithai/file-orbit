@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: pbs-rclone-postgres
+    environment:
+      POSTGRES_USER: pbs_rclone
+      POSTGRES_PASSWORD: pbs_rclone_password
+      POSTGRES_DB: pbs_rclone
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pbs_rclone"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: pbs-rclone-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rclone:
+    image: rclone/rclone:latest
+    container_name: pbs-rclone-rc
+    command: rcd --rc-addr :5572 --rc-no-auth --rc-web-gui --rc-web-gui-no-open-browser
+    ports:
+      - "5572:5572"
+    # Commented out volumes for now - causing permission issues on macOS
+    # volumes:
+    #   - ./config/rclone:/config/rclone
+    #   - ./data:/data
+    # environment:
+    #   - RCLONE_CONFIG=/config/rclone/rclone.conf
+
+  # Development database admin tool (optional)
+  adminer:
+    image: adminer:latest
+    container_name: pbs-rclone-adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    profiles:
+      - dev
+
+volumes:
+  postgres_data:
+  redis_data:
