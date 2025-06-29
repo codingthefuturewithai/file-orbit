@@ -150,6 +150,12 @@ test-*.mov
 test-*.mxf
 /tmp/ctf-rclone-test/
 
+# Transfer output directories (transient files)
+destination-files/
+s3-transfers/
+downloaded-files/
+transferred-files/
+
 # OS generated files
 .DS_Store
 .DS_Store?
