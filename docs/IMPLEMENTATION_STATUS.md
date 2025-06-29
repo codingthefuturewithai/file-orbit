@@ -42,6 +42,7 @@ Last Updated: December 6, 2024
 - ✅ Error handling and retry functionality
 - ✅ Enhanced error messages for validation failures (NEW - Dec 6, 2024)
 - ✅ Bandwidth parsing with human-readable formats (10M, 1G, etc.)
+- ✅ Transfer edit functionality (NEW - Dec 6, 2024)
 - ❌ Log viewer UI (implemented backend, not yet frontend)
 
 ## 🟡 Partially Implemented

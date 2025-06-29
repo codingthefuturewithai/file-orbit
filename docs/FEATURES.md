@@ -2,8 +2,9 @@
 
 ## Reality Check: What Actually Works
 
-### ✅ Working Features (Local Only)
+### ✅ Working Features
 - **Local directory → Local directory transfers**
+- **S3 → Local directory transfers** ✅ WORKING AS OF DEC 6, 2024!
 - **File watching on local directories**
 - **Manual transfer creation via UI**
 - **Transfer history and monitoring**
@@ -11,16 +12,16 @@
 - **Endpoint CRUD operations** - Full create, read, update, delete functionality
 - **Enhanced error handling** - Detailed validation messages in UI
 - **Bandwidth configuration** - Support for human-readable formats (10M, 1G, etc.)
+- **Transfer editing** - Modify and retry existing transfers without creating new ones
 
 ### ❌ Not Working (Required for Production)
-- **S3 transfers** - Code exists, just needs AWS credentials in .env (30 min fix)
 - **SMB/CIFS transfers** - UI exists but rclone config NOT IMPLEMENTED (3 hours to implement)
 - **SFTP transfers** - UI exists but rclone config NOT IMPLEMENTED (3 hours to implement)
 - **S3 event monitoring** - SQS integration not configured
-- **Cross-machine transfers** - Only local paths work
+- **Cross-machine transfers** - Only local and S3→local work
 - **Network error handling** - No retry logic
 - **Credential security** - Stored in plain text
-- **Log Viewer UI** - Cannot view logs without SSH access (3 hours to implement)
+- **Log Viewer UI** - Backend implemented, frontend not yet (2 hours to implement)
 - **DISTRIBUTED ARCHITECTURE** - Cannot control transfers between remote servers
   - Current: UI on Server A can only transfer files on Server A
   - Required: UI on Server A controls transfers from Server B to Server C
