@@ -4,14 +4,14 @@
 This project builds an enterprise UI layer on top of rclone for video file transfers.
 
 ## Project Overview
-Building a custom enterprise file transfer solution using rclone as the underlying engine, with a specific focus on video file transfers (mp4, mov, mxf formats). The goal is to create a web-based orchestration layer that addresses rclone's limitations for enterprise use at PBS.
+Building a custom enterprise file transfer solution using rclone as the underlying engine, with a specific focus on video file transfers (mp4, mov, mxf formats). The goal is to create a web-based orchestration layer that addresses rclone's limitations for enterprise use at CTF.
 
 ## Key Components Created
 
 ### 1. Enhanced Interactive UI Mockup (`rclone-ui-mockup-enhanced.html`)
 - Fully functional HTML prototype with interactive features
 - Dashboard with real-time transfer monitoring and progress bars
-- PBS logo integration in dashboard header
+- CTF logo integration in dashboard header
 - Job creation and management interface with validation
 - Schedule configuration for recurring transfers (hourly, daily, weekly)
 - Remote storage management supporting SMB/CIFS, S3, SFTP, and local filesystems
@@ -23,7 +23,7 @@ Building a custom enterprise file transfer solution using rclone as the underlyi
 - **NEW: Fully functional Settings section with 4 tabs:**
   - General: Binary paths, log levels, atomic delivery configuration
   - Performance: Transfer settings, resource monitoring, Prometheus metrics
-  - Notifications: Email configuration (smtp.pbs.org), webhook integration, event triggers
+  - Notifications: Email configuration (smtp.ctf.org), webhook integration, event triggers
   - Security: LDAP/AD authentication, API security, compliance modes
 
 ### 2. Technical Documentation
@@ -108,7 +108,7 @@ The custom orchestration layer provides:
   - All deliverables easily accessible from README
 
 ## Key Design Decisions
-1. All examples use video files to match PBS use case
+1. All examples use video files to match CTF use case
 2. Emphasis on SMB/CIFS and UNC path support for Windows shares
 3. Failed transfer handling with detailed error tracking
 4. Real-time progress monitoring with ETA calculations
@@ -118,11 +118,11 @@ The custom orchestration layer provides:
 
 ## Important Files
 - `rclone-ui-mockup-enhanced.html` - The main interactive prototype (v2 with Settings functionality)
-- `pbs.png` - PBS logo file for dashboard branding
+- `ctf.png` - CTF logo file for dashboard branding
 - `rclone-functional-gap-analysis.md` - Critical requirements mapping (updated with throttling)
 - `rclone-detailed-research.md` - Technical implementation guide
 - `rclone-technical-analysis.md` - Deep dive into rclone capabilities and deployment patterns
-- `pbs-rclone-architecture.md` - High-level architecture design with Mermaid diagrams
+- `ctf-rclone-architecture.md` - High-level architecture design with Mermaid diagrams
 - `DELIVERABLES-SUMMARY.md` - Executive overview
 - `ENHANCED-MOCKUP-SUMMARY.md` - Summary of v1 enhancements
 
@@ -167,12 +167,12 @@ The custom orchestration layer provides:
 ### UI Mockup v2 Completion
 1. **Settings Section Enhancement**: Added full functionality to all Settings tabs
    - Performance tab: Resource monitoring, metrics configuration
-   - Notifications tab: PBS-specific email settings, webhook integration
-   - Security tab: LDAP authentication for PBS domain, compliance modes
+   - Notifications tab: CTF-specific email settings, webhook integration
+   - Security tab: LDAP authentication for CTF domain, compliance modes
 2. **Bug Fixes**: 
    - Fixed JavaScript tab switching for Audit Trail and Notifications tabs
    - Corrected element ID mapping in showLogTab() function
-3. **PBS Branding**: Added PBS logo image reference to dashboard header
+3. **CTF Branding**: Added CTF logo image reference to dashboard header
 4. **Code Improvements**: Added showSettingsTab() function for Settings navigation
 
 ### Architecture Phase Begun
@@ -192,8 +192,8 @@ The custom orchestration layer provides:
 
 ## Lessons Learned
 - Tab switching requires careful attention to element IDs matching the JavaScript selectors
-- PBS infrastructure uses LDAP/Active Directory for authentication
-- PBS email infrastructure uses smtp.pbs.org for notifications
+- CTF infrastructure uses LDAP/Active Directory for authentication
+- CTF email infrastructure uses smtp.ctf.org for notifications
 - The mockup successfully demonstrates all identified functional gaps can be addressed
 - Rclone RC API provides comprehensive programmatic control but lacks native event handling
 - Per-endpoint throttling requires a wrapper service as rclone only supports global limits
@@ -278,7 +278,7 @@ The MVP won't be throwaway - it forms the foundation that can be enhanced increm
    
 4. **File Transfers Working**:
    - Successfully tested transfer of *.mp4 files from Local Storage to 5TB Limited Storage
-   - Files transferred from /tmp/pbs-rclone-test/source to /tmp/pbs-rclone-test/5tb-limited/transferred/
+   - Files transferred from /tmp/ctf-rclone-test/source to /tmp/ctf-rclone-test/5tb-limited/transferred/
    - Progress monitoring and completion status updates working
 
 ### 🟡 What's Missing for Production
@@ -310,7 +310,7 @@ The MVP won't be throwaway - it forms the foundation that can be enhanced increm
 
 4. **Monitor**:
    - Check worker terminal for progress
-   - View files in destination: `ls /tmp/pbs-rclone-test/*/`
+   - View files in destination: `ls /tmp/ctf-rclone-test/*/`
 
 ### Session Resume Instructions
 If resuming in a new session:
@@ -534,7 +534,7 @@ I will:
    - Currently using absolute paths (TODO: make configurable)
 
 ### 🔧 Implementation Notes
-- **Log Path Issue**: Had to use absolute path `/Users/tkitchens/projects/pbs/rclone-poc/mvp/logs/` 
+- **Log Path Issue**: Had to use absolute path `/Users/tkitchens/projects/ctf/rclone-poc/mvp/logs/` 
   - Relative path resolution was problematic
   - TODO: Make this configurable via environment variable
 - **API Route Fix**: Changed from `@router.get("/logs/{log_type}")` to `@router.get("/{log_type}")`

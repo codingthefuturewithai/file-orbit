@@ -1,8 +1,8 @@
-# PBS Rclone MVP Architecture
+# CTF Rclone MVP Architecture
 
 ## Overview
 
-The PBS Rclone MVP is a distributed file transfer orchestration system designed for **machine-to-machine** and **cloud-to-on-premise** transfers. It provides enterprise features like event-driven transfers, scheduling, and monitoring while leveraging rclone's extensive protocol support.
+The CTF Rclone MVP is a distributed file transfer orchestration system designed for **machine-to-machine** and **cloud-to-on-premise** transfers. It provides enterprise features like event-driven transfers, scheduling, and monitoring while leveraging rclone's extensive protocol support.
 
 **CURRENT STATUS**: MVP only supports local transfers. Production use requires implementation of remote endpoints (S3, SMB, SFTP) and distributed architecture.
 
@@ -63,9 +63,9 @@ The PBS Rclone MVP is a distributed file transfer orchestration system designed 
 
 | Service | Purpose | Port | Container Name |
 |---------|---------|------|----------------|
-| PostgreSQL | Primary database | 5432 | pbs-rclone-postgres |
-| Redis | Job queue & caching | 6379 | pbs-rclone-redis |
-| Rclone RC | Remote control API (unused) | 5572 | pbs-rclone-rc |
+| PostgreSQL | Primary database | 5432 | ctf-rclone-postgres |
+| Redis | Job queue & caching | 6379 | ctf-rclone-redis |
+| Rclone RC | Remote control API (unused) | 5572 | ctf-rclone-rc |
 
 ### Application Services (Python/Node)
 

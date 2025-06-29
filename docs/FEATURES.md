@@ -1,4 +1,4 @@
-# PBS Rclone MVP Features
+# CTF Rclone MVP Features
 
 ## Reality Check: What Actually Works
 
@@ -172,7 +172,7 @@
 2. Create a transfer template in the UI
 3. Drop a file in the watched directory:
    ```bash
-   cp test-file.mp4 /tmp/pbs-rclone-test/watch/
+   cp test-file.mp4 /tmp/ctf-rclone-test/watch/
    ```
 4. Check dashboard for automatic transfer
 
@@ -186,7 +186,7 @@
 ### Test Transfer Templates
 1. Go to "Transfer Templates" page
 2. Create template with:
-   - Watch path: `/tmp/pbs-rclone-test/watch`
+   - Watch path: `/tmp/ctf-rclone-test/watch`
    - File pattern: `*.mp4`
    - Destination template: `/archive/{year}/{month}/{filename}`
 3. Test with file drop
@@ -198,7 +198,7 @@
 {
   "type": "local",
   "config": {
-    "path": "/tmp/pbs-rclone-test/source"
+    "path": "/tmp/ctf-rclone-test/source"
   }
 }
 ```

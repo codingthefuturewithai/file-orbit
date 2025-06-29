@@ -9,10 +9,10 @@ from pathlib import Path
 
 # Test directories
 TEST_DIRS = [
-    "/tmp/pbs-rclone-test/source",
-    "/tmp/pbs-rclone-test/dest",
-    "/tmp/pbs-rclone-test/archive",
-    "/tmp/pbs-rclone-test/5tb-limited"
+    "/tmp/ctf-rclone-test/source",
+    "/tmp/ctf-rclone-test/dest",
+    "/tmp/ctf-rclone-test/archive",
+    "/tmp/ctf-rclone-test/5tb-limited"
 ]
 
 # Test files to create
@@ -63,7 +63,7 @@ def cleanup_test_data():
     import shutil
     
     print("Cleaning up test data...")
-    base_dir = "/tmp/pbs-rclone-test"
+    base_dir = "/tmp/ctf-rclone-test"
     if os.path.exists(base_dir):
         shutil.rmtree(base_dir)
         print(f"Removed {base_dir}")

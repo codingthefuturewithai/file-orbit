@@ -11,7 +11,7 @@ from app.services.redis_manager import redis_manager
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    print("Starting up PBS Rclone MVP API...")
+    print("Starting up CTF Rclone MVP API...")
     
     # Create database tables
     async with engine.begin() as conn:
@@ -23,12 +23,12 @@ async def lifespan(app: FastAPI):
     yield
     
     # Shutdown
-    print("Shutting down PBS Rclone MVP API...")
+    print("Shutting down CTF Rclone MVP API...")
     await redis_manager.disconnect()
 
 
 app = FastAPI(
-    title="PBS Rclone MVP API",
+    title="CTF Rclone MVP API",
     description="Enterprise file transfer orchestration API built on rclone",
     version="0.1.0",
     lifespan=lifespan
@@ -51,7 +51,7 @@ app.include_router(api_router, prefix="/api/v1")
 @app.get("/")
 async def root():
     return {
-        "message": "PBS Rclone MVP API",
+        "message": "CTF Rclone MVP API",
         "version": "0.1.0",
         "docs": "/docs",
         "redoc": "/redoc"
@@ -62,6 +62,6 @@ async def root():
 async def health_check():
     return {
         "status": "healthy",
-        "service": "pbs-rclone-mvp",
+        "service": "ctf-rclone-mvp",
         "version": "0.1.0"
     }

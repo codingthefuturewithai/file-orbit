@@ -50,10 +50,10 @@ async def seed_endpoints(session: AsyncSession):
         ),
         Endpoint(
             id=str(uuid.uuid4()),
-            name="PBS S3 Bucket",
+            name="CTF S3 Bucket",
             type=EndpointType.S3,
             config={
-                "bucket": "pbs-videos",
+                "bucket": "ctf-videos",
                 "region": "us-east-1",
                 "access_key": "YOUR_ACCESS_KEY",
                 "secret_key": "YOUR_SECRET_KEY"
@@ -67,10 +67,10 @@ async def seed_endpoints(session: AsyncSession):
             name="Archive SMB Share",
             type=EndpointType.SMB,
             config={
-                "host": "archive.pbs.org",
+                "host": "archive.ctf.org",
                 "share": "videos",
-                "user": "pbsuser",
-                "domain": "PBS"
+                "user": "ctfuser",
+                "domain": "CTF"
             },
             max_concurrent_transfers=3,
             is_active=True,

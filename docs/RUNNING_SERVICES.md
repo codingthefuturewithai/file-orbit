@@ -1,4 +1,4 @@
-# Running PBS Rclone MVP Services
+# Running CTF Rclone MVP Services
 
 ## Quick Start with Management Script
 
@@ -49,8 +49,8 @@ docker-compose up -d
 docker ps
 
 # View logs
-docker logs pbs-rclone-postgres
-docker logs pbs-rclone-redis
+docker logs ctf-rclone-postgres
+docker logs ctf-rclone-redis
 
 # Stop containers
 docker-compose down
@@ -144,7 +144,7 @@ Log files are created in the `logs/` directory when using `manage.sh`:
 
 ```bash
 # Connect to PostgreSQL
-docker exec -it pbs-rclone-postgres psql -U pbs_rclone -d pbs_rclone
+docker exec -it ctf-rclone-postgres psql -U ctf_rclone -d ctf_rclone
 
 # Common queries
 \dt                    # List tables
@@ -161,12 +161,12 @@ docker-compose --profile dev up adminer
 
 ```bash
 # Connect to Redis CLI
-docker exec -it pbs-rclone-redis redis-cli
+docker exec -it ctf-rclone-redis redis-cli
 
 # Common commands
 KEYS *                 # List all keys
-LLEN pbs_rclone:job_queue  # Check job queue length
-LRANGE pbs_rclone:job_queue 0 -1  # View queued jobs
+LLEN ctf_rclone:job_queue  # Check job queue length
+LRANGE ctf_rclone:job_queue 0 -1  # View queued jobs
 ```
 
 ## Troubleshooting

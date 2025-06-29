@@ -1,4 +1,4 @@
-# PBS Rclone MVP
+# CTF Rclone MVP
 
 ## ✅ Current Status: Functional MVP with Local Transfers
 
@@ -21,7 +21,7 @@
 
 ## Overview
 
-This is the Minimum Viable Product (MVP) implementation of the PBS Rclone enterprise file transfer solution. The MVP provides a web-based orchestration layer on top of rclone for **machine-to-machine** and **cloud-to-on-premise** transfers, with a focus on event-driven workflows.
+This is the Minimum Viable Product (MVP) implementation of the CTF Rclone enterprise file transfer solution. The MVP provides a web-based orchestration layer on top of rclone for **machine-to-machine** and **cloud-to-on-premise** transfers, with a focus on event-driven workflows.
 
 ## Quick Start
 
@@ -105,7 +105,7 @@ cd backend && python test_event_driven.py
 python test_event_driven.py --trigger
 
 # Or manually drop a file
-cp video.mp4 /tmp/pbs-rclone-test/watch/
+cp video.mp4 /tmp/ctf-rclone-test/watch/
 ```
 
 ## Project Structure

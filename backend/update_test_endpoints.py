@@ -26,18 +26,18 @@ async def update_endpoints():
             if endpoint.type == EndpointType.LOCAL:
                 if "5TB" in endpoint.name:
                     # Update 5TB limited storage
-                    endpoint.config = {"path": "/tmp/pbs-rclone-test/5tb-limited"}
-                    print(f"Updated {endpoint.name} to use /tmp/pbs-rclone-test/5tb-limited")
+                    endpoint.config = {"path": "/tmp/ctf-rclone-test/5tb-limited"}
+                    print(f"Updated {endpoint.name} to use /tmp/ctf-rclone-test/5tb-limited")
                 else:
                     # Update regular local storage
-                    endpoint.config = {"path": "/tmp/pbs-rclone-test/source"}
-                    print(f"Updated {endpoint.name} to use /tmp/pbs-rclone-test/source")
+                    endpoint.config = {"path": "/tmp/ctf-rclone-test/source"}
+                    print(f"Updated {endpoint.name} to use /tmp/ctf-rclone-test/source")
             
             elif endpoint.type == EndpointType.SMB:
                 # For testing, we'll use a local path instead of actual SMB
                 endpoint.type = EndpointType.LOCAL
-                endpoint.config = {"path": "/tmp/pbs-rclone-test/archive"}
-                print(f"Updated {endpoint.name} to use local path /tmp/pbs-rclone-test/archive (for testing)")
+                endpoint.config = {"path": "/tmp/ctf-rclone-test/archive"}
+                print(f"Updated {endpoint.name} to use local path /tmp/ctf-rclone-test/archive (for testing)")
             
             # Keep S3 endpoint as is (requires real credentials)
             # In a real test, you'd update this with test bucket info
@@ -45,10 +45,10 @@ async def update_endpoints():
         await db.commit()
         print("\nEndpoints updated for testing!")
         print("\nTest paths:")
-        print("- Source: /tmp/pbs-rclone-test/source")
-        print("- 5TB Limited: /tmp/pbs-rclone-test/5tb-limited")
-        print("- Archive: /tmp/pbs-rclone-test/archive")
-        print("- Destination: /tmp/pbs-rclone-test/dest")
+        print("- Source: /tmp/ctf-rclone-test/source")
+        print("- 5TB Limited: /tmp/ctf-rclone-test/5tb-limited")
+        print("- Archive: /tmp/ctf-rclone-test/archive")
+        print("- Destination: /tmp/ctf-rclone-test/dest")
         print("\nYou can now create transfers between these endpoints.")
 
 if __name__ == "__main__":

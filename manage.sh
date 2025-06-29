@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# PBS Rclone MVP Management Script
+# CTF Rclone MVP Management Script
 # Usage: ./manage.sh [start|stop|restart|status|logs] [service]
 
 set -e
@@ -242,9 +242,9 @@ check_status() {
 }
 
 check_docker_status() {
-    if docker ps | grep -q "pbs-rclone"; then
+    if docker ps | grep -q "ctf-rclone"; then
         echo -e "${GREEN}✓ Docker containers are running${NC}"
-        docker ps --format "table {{.Names}}\t{{.Status}}" | grep "pbs-rclone"
+        docker ps --format "table {{.Names}}\t{{.Status}}" | grep "ctf-rclone"
     else
         echo -e "${RED}✗ Docker containers are not running${NC}"
     fi
@@ -317,7 +317,8 @@ case "$1" in
         ;;
     
     status)
-        echo -e "${YELLOW}=== PBS Rclone MVP Status ===${NC}"
+        echo -e "${YELLOW}=== CTF Rclone MVP Status ===${NC}"
+        echo "CTF Rclone MVP Management Script"
         check_docker_status
         check_status "backend" || true
         check_status "frontend" || true
@@ -336,7 +337,7 @@ case "$1" in
         ;;
     
     *)
-        echo "PBS Rclone MVP Management Script"
+        echo "CTF Rclone MVP Management Script"
         echo "Usage: $0 [start|stop|restart|status|logs] [service]"
         echo ""
         echo "Commands:"

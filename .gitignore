@@ -148,7 +148,7 @@ scheduler.log
 test-*.mp4
 test-*.mov
 test-*.mxf
-/tmp/pbs-rclone-test/
+/tmp/ctf-rclone-test/
 
 # OS generated files
 .DS_Store

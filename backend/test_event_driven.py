@@ -37,7 +37,7 @@ async def setup_test_transfer_templates():
             return False
             
         # Create watch directory
-        watch_dir = "/tmp/pbs-rclone-test/watch"
+        watch_dir = "/tmp/ctf-rclone-test/watch"
         os.makedirs(watch_dir, exist_ok=True)
         
         # Check if template already exists
@@ -112,7 +112,7 @@ async def setup_test_transfer_templates():
 
 async def trigger_file_events():
     """Create test files to trigger events"""
-    watch_dir = "/tmp/pbs-rclone-test/watch"
+    watch_dir = "/tmp/ctf-rclone-test/watch"
     source_dir = "/tmp/pbs-rclone-test/source"
     
     print(f"\nCreating test files in {watch_dir}")

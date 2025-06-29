@@ -1,4 +1,4 @@
-# PBS Rclone MVP Setup Guide
+# CTF Rclone MVP Setup Guide
 
 ## Current Status ✅
 
@@ -24,7 +24,7 @@
 ### 1. Clone and Navigate to MVP Directory
 
 ```bash
-cd /Users/tkitchens/projects/pbs/rclone-poc/mvp
+cd /Users/tkitchens/projects/ctf/rclone-poc/mvp
 ```
 
 ### 2. Create Environment File
@@ -52,9 +52,9 @@ docker-compose logs -f
 Expected output:
 ```
 NAME                    STATUS    PORTS
-pbs-rclone-postgres     running   0.0.0.0:5432->5432/tcp
-pbs-rclone-redis        running   0.0.0.0:6379->6379/tcp
-pbs-rclone-rc           running   0.0.0.0:5572->5572/tcp
+ctf-rclone-postgres     running   0.0.0.0:5432->5432/tcp
+ctf-rclone-redis        running   0.0.0.0:6379->6379/tcp
+ctf-rclone-rc           running   0.0.0.0:5572->5572/tcp
 ```
 
 ### 4. Set Up the Backend

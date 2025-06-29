@@ -1,4 +1,4 @@
-# PBS Rclone POC - Complete Implementation Plan (Revised)
+# CTF Rclone POC - Complete Implementation Plan (Revised)
 
 ## Executive Summary
 
@@ -102,7 +102,7 @@ Focus on enabling **machine-to-machine** and **cloud-to-on-premise** transfers w
 1. **SQS Configuration** (4 hours)
    ```python
    # S3 bucket → SNS → SQS setup
-   SQS_QUEUE_URL=https://sqs.us-east-1.amazonaws.com/xxx/pbs-s3-events
+   SQS_QUEUE_URL=https://sqs.us-east-1.amazonaws.com/xxx/ctf-s3-events
    
    # Update s3_event_monitor.py
    - Poll SQS for S3 events
