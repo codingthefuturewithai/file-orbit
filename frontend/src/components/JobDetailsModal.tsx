@@ -2,17 +2,20 @@ import React, { useEffect, useState } from 'react';
 import { Job, Transfer } from '../types';
 import StatusBadge from './StatusBadge';
 import ProgressBar from './ProgressBar';
+import EditJobModal from './EditJobModal';
 import api from '../services/api';
 
 interface JobDetailsModalProps {
   job: Job | null;
   show: boolean;
   onClose: () => void;
+  onJobUpdated?: () => void;
 }
 
-const JobDetailsModal: React.FC<JobDetailsModalProps> = ({ job, show, onClose }) => {
+const JobDetailsModal: React.FC<JobDetailsModalProps> = ({ job, show, onClose, onJobUpdated }) => {
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
     if (job && show) {
@@ -221,6 +224,15 @@ const JobDetailsModal: React.FC<JobDetailsModalProps> = ({ job, show, onClose })
               </div>
             </div>
             <div className="modal-footer">
+              {job.status !== 'running' && job.status !== 'queued' && (
+                <button 
+                  type="button" 
+                  className="btn btn-primary"
+                  onClick={() => setShowEditModal(true)}
+                >
+                  Edit Transfer
+                </button>
+              )}
               <button type="button" className="btn btn-secondary" onClick={onClose}>
                 Close
               </button>
@@ -228,6 +240,20 @@ const JobDetailsModal: React.FC<JobDetailsModalProps> = ({ job, show, onClose })
           </div>
         </div>
       </div>
+      
+      <EditJobModal
+        job={job}
+        show={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onJobUpdated={() => {
+          setShowEditModal(false);
+          if (onJobUpdated) {
+            onJobUpdated();
+          }
+          // Re-fetch transfers to show updated info
+          fetchTransfers();
+        }}
+      />
     </>
   );
 };

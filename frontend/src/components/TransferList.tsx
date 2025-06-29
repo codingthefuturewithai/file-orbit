@@ -3,6 +3,7 @@ import { Job } from '../types';
 import ProgressBar from './ProgressBar';
 import StatusBadge from './StatusBadge';
 import JobDetailsModal from './JobDetailsModal';
+import EditJobModal from './EditJobModal';
 import api from '../services/api';
 
 interface TransferListProps {
@@ -15,6 +16,7 @@ const TransferList: React.FC<TransferListProps> = ({ jobs, showProgress = false,
   const [retryingJobs, setRetryingJobs] = useState<Set<string>>(new Set());
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const formatBytes = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -104,6 +106,17 @@ const TransferList: React.FC<TransferListProps> = ({ jobs, showProgress = false,
               >
                 Details
               </button>
+              {job.status !== 'running' && job.status !== 'queued' && (
+                <button 
+                  className="btn btn-secondary btn-sm me-2"
+                  onClick={() => {
+                    setSelectedJob(job);
+                    setShowEditModal(true);
+                  }}
+                >
+                  Edit
+                </button>
+              )}
               {job.status === 'running' && (
                 <button 
                   className="btn btn-danger btn-sm"
@@ -133,6 +146,22 @@ const TransferList: React.FC<TransferListProps> = ({ jobs, showProgress = false,
         onClose={() => {
           setShowDetailsModal(false);
           setSelectedJob(null);
+        }}
+      />
+      
+      <EditJobModal
+        job={selectedJob}
+        show={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setSelectedJob(null);
+        }}
+        onJobUpdated={() => {
+          setShowEditModal(false);
+          setSelectedJob(null);
+          if (onJobUpdated) {
+            onJobUpdated();
+          }
         }}
       />
     </>

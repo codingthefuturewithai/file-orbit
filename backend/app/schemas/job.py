@@ -24,6 +24,9 @@ class JobCreate(JobBase):
 
 class JobUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=200)
+    source_endpoint_id: Optional[str] = None
+    source_path: Optional[str] = None
+    destination_endpoint_id: Optional[str] = None
     destination_path: Optional[str] = None
     file_pattern: Optional[str] = None
     delete_source_after_transfer: Optional[bool] = None

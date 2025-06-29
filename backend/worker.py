@@ -219,14 +219,14 @@ class JobProcessor:
         """Configure rclone remote for an endpoint"""
         config = {
             'name': name,
-            'type': endpoint.type
+            'type': endpoint.type.value  # Get the string value from the enum
         }
         
         # Map endpoint config to rclone config
-        if endpoint.type == 'local':
+        if endpoint.type.value == 'local':
             # Local needs the base path
             config['path'] = endpoint.config.get('path', '/')
-        elif endpoint.type == 's3':
+        elif endpoint.type.value == 's3':
             # Use endpoint credentials if provided, otherwise fall back to environment variables
             access_key = endpoint.config.get('access_key') or settings.AWS_ACCESS_KEY_ID
             secret_key = endpoint.config.get('secret_key') or settings.AWS_SECRET_ACCESS_KEY
@@ -239,14 +239,14 @@ class JobProcessor:
                 'region': region,
                 'bucket': endpoint.config.get('bucket')
             })
-        elif endpoint.type == 'smb':
+        elif endpoint.type.value == 'smb':
             config.update({
                 'host': endpoint.config.get('host'),
                 'user': endpoint.config.get('user'),
                 'pass': endpoint.config.get('password'),
                 'domain': endpoint.config.get('domain', 'WORKGROUP')
             })
-        elif endpoint.type == 'sftp':
+        elif endpoint.type.value == 'sftp':
             config.update({
                 'host': endpoint.config.get('host'),
                 'user': endpoint.config.get('user'),

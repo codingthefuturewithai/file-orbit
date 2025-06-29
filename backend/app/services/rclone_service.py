@@ -76,6 +76,7 @@ class RcloneService:
                 config_content += f"access_key_id = {config.get('access_key_id', '')}\n"
                 config_content += f"secret_access_key = {config.get('secret_access_key', '')}\n"
                 config_content += f"region = {config.get('region', '')}\n"
+                # Note: For S3, bucket is specified in the path, not in config
             elif config['type'] == 'smb':
                 config_content += f"host = {config.get('host', '')}\n"
                 config_content += f"user = {config.get('user', '')}\n"
@@ -163,8 +164,17 @@ class RcloneService:
             # For relative paths, join with base path
             from pathlib import Path
             return str(Path(base_path) / path)
+        elif remote_config.get('type') == 's3':
+            # For S3, include bucket in the path
+            bucket = remote_config.get('bucket', '')
+            if bucket:
+                # Remove leading slash from path if present
+                clean_path = path.lstrip('/')
+                return f"{remote_name}:{bucket}/{clean_path}"
+            else:
+                return f"{remote_name}:{path}"
         else:
-            # For remotes, use remote:path format
+            # For other remotes, use remote:path format
             return f"{remote_name}:{path}"
     
     async def start_transfer(self, source: str, dest: str, delete_source: bool = False) -> asyncio.subprocess.Process:
