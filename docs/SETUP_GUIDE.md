@@ -19,29 +19,33 @@ cd backend
 cp .env.example .env
 # Optional: edit .env to add AWS credentials for S3 transfers
 
-# 4. Create Python virtual environment and install dependencies
+# 4. Start Docker containers (PostgreSQL, Redis, Rclone)
+docker-compose up -d
+
+# 5. Create Python virtual environment and install dependencies
 python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
-# 5. Initialize the database
+# 6. Initialize and seed the database
+# IMPORTANT: Docker containers must be running before this step!
 python init_db.py
 python seed_db.py
 cd ..
 
-# 6. Install frontend dependencies
+# 7. Install frontend dependencies
 cd frontend
 npm install
 cd ..
 
-# 7. Start everything with one command
+# 8. Start all application services
 ./manage.sh start all
-# This command automatically:
-# - Starts Docker containers (PostgreSQL, Redis, Rclone)
-# - Creates Python venv if needed
-# - Starts backend API, frontend UI, and worker services
+# This command will:
+# - Check that Docker containers are running (skips if already up)
+# - Create Python venv if needed (skips if exists)
+# - Start backend API, frontend UI, and worker services
 
-# 8. Verify everything is running
+# 9. Verify everything is running
 ./manage.sh status
 ```
 
@@ -96,6 +100,8 @@ cp .env.example .env
 docker-compose up -d
 ```
 
+Wait a few seconds for the database to be ready.
+
 ## Step 3: Set Up the Backend
 1. Navigate to the backend directory:
    ```bash
@@ -118,6 +124,8 @@ docker-compose up -d
    ```
 
 ## Step 4: Initialize and Seed the Database
+**Important**: The Docker containers must be running before this step!
+
 1. Create the database tables:
    ```bash
    python init_db.py
