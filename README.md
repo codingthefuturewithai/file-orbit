@@ -48,7 +48,56 @@ The system consists of:
 ### Not Yet Implemented
 - ❌ **Authentication** - No login system
 - ❌ **Cloud Storage** - S3/SMB/SFTP endpoints need configuration
-- ❌ **Email Notifications** - Structure exists but not configured
+
+## 📸 Screenshots
+
+### Dashboard
+![Dashboard](docs/images/dashboard.png)
+The main dashboard provides an at-a-glance view of your file transfer operations, including:
+- Real-time statistics (total transfers, active transfers, failed transfers, success rate)
+- Active transfers with live progress bars
+- Recent transfer history
+
+### Configure Endpoints
+![Configure Endpoints](docs/images/configure_endpoints.png)
+Manage your storage endpoints with support for:
+- Multiple storage types (Local, S3, SMB/CIFS, SFTP)
+- Concurrent transfer limits per endpoint
+- Bandwidth throttling
+- Easy configuration and testing
+
+### Create Transfer
+![Create Transfer](docs/images/create_transfer.png)
+Create manual file transfers with:
+- Source and destination endpoint selection
+- Path browsing and selection
+- File pattern filtering (e.g., *.mp4, *.mov)
+- Schedule configuration for recurring transfers
+- Path template variables ({year}, {month}, {day}, {filename})
+
+### Transfer Templates
+![Create Transfer Template](docs/images/create_transfer_template.png)
+Define automated transfer workflows that trigger based on:
+- S3 events (object created)
+- File system events (file created/modified)
+- Manual triggers
+- Support for destination path templates with variable substitution
+
+### Transfer History
+![Transfer History](docs/images/transfer_history.png)
+Track all transfers with:
+- Comprehensive filtering by status, type, date range
+- Search functionality
+- Detailed transfer information
+- Retry capabilities for failed transfers
+
+### System Logs
+![System Logs](docs/images/system_logs.png)
+Monitor system operations with:
+- Real-time log viewing for all services (backend, worker, event monitor)
+- Log filtering and search
+- Auto-refresh capabilities
+- Service-specific log selection
 
 ## Documentation
 
