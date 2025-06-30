@@ -23,7 +23,12 @@ async def seed_database():
         await seed_endpoints(session)
         await seed_transfer_templates(session)
         await session.commit()
-        print("Database seeded successfully!")
+        print("\n✅ Database seeded successfully!")
+        print("\n📝 Note: Example endpoints and templates have been created.")
+        print("   - Local endpoints use /tmp/file-orbit/ paths (safe for testing)")
+        print("   - S3 and SMB endpoints are disabled until you add credentials")
+        print("   - Update the endpoints in the UI to match your environment")
+        print("\n🚀 You can now access the UI at http://localhost:3000")
 
 async def seed_endpoints(session: AsyncSession):
     """Add sample endpoints"""
@@ -32,49 +37,49 @@ async def seed_endpoints(session: AsyncSession):
     endpoints = [
         Endpoint(
             id=str(uuid.uuid4()),
-            name="Local Storage",
+            name="Example: Local Storage",
             type=EndpointType.LOCAL,
-            config={"path": "/mnt/storage"},
+            config={"path": "/tmp/file-orbit/local-storage"},
             max_concurrent_transfers=10,
             is_active=True,
             connection_status="connected"
         ),
         Endpoint(
             id=str(uuid.uuid4()),
-            name="5TB Limited Storage",
+            name="Example: Throttled Storage (2 concurrent)",
             type=EndpointType.LOCAL,
-            config={"path": "/mnt/limited-storage"},
+            config={"path": "/tmp/file-orbit/throttled-storage"},
             max_concurrent_transfers=2,  # This is the throttled endpoint
             is_active=True,
             connection_status="connected"
         ),
         Endpoint(
             id=str(uuid.uuid4()),
-            name="CTF S3 Bucket",
+            name="Example: AWS S3 Bucket",
             type=EndpointType.S3,
             config={
-                "bucket": "ctf-videos",
+                "bucket": "your-bucket-name",
                 "region": "us-east-1",
                 "access_key": "YOUR_ACCESS_KEY",
                 "secret_key": "YOUR_SECRET_KEY"
             },
             max_concurrent_transfers=5,
-            is_active=True,
-            connection_status="connected"
+            is_active=False,  # Disabled by default until configured
+            connection_status="not_configured"
         ),
         Endpoint(
             id=str(uuid.uuid4()),
-            name="Archive SMB Share",
+            name="Example: SMB/CIFS Share",
             type=EndpointType.SMB,
             config={
-                "host": "archive.ctf.org",
-                "share": "videos",
-                "user": "ctfuser",
-                "domain": "CTF"
+                "host": "fileserver.example.com",
+                "share": "shared-folder",
+                "user": "your-username",
+                "domain": "WORKGROUP"
             },
             max_concurrent_transfers=3,
-            is_active=True,
-            connection_status="connected"
+            is_active=False,  # Disabled by default until configured
+            connection_status="not_configured"
         )
     ]
     
@@ -95,22 +100,22 @@ async def seed_transfer_templates(session: AsyncSession):
     templates = [
         TransferTemplate(
             id=str(uuid.uuid4()),
-            name="S3 to Local Transfer",
-            description="Transfer new S3 videos to local storage",
+            name="Example: S3 Event-Driven Transfer",
+            description="Example template for S3 → Local → Archive workflow. Configure S3 endpoint and update paths before activating.",
             event_type=EventType.S3_OBJECT_CREATED,
-            is_active=True,
+            is_active=False,  # Disabled until S3 is configured
             source_config={
-                "bucket": "ctf-videos",
+                "bucket": "your-bucket-name",
                 "prefix": "incoming/",
                 "suffix": ".mp4"
             },
             source_endpoint_id=s3_id,
             destination_endpoint_id=local_id,
-            destination_path_template="/mnt/storage/videos/{year}/{month}/{filename}",
+            destination_path_template="/tmp/file-orbit/videos/{year}/{month}/{filename}",
             chain_rules=[
                 {
                     "endpoint_id": limited_id,
-                    "path_template": "/mnt/limited-storage/archive/{year}/{filename}"
+                    "path_template": "/tmp/file-orbit/archive/{year}/{filename}"
                 },
                 {
                     "endpoint_id": smb_id,
@@ -122,20 +127,20 @@ async def seed_transfer_templates(session: AsyncSession):
         ),
         TransferTemplate(
             id=str(uuid.uuid4()),
-            name="Local File Watch",
-            description="Watch for new files in upload directory",
+            name="Example: Local Directory Watcher",
+            description="Example template that watches a local directory for new files. Update the watch path and destination before activating.",
             event_type=EventType.FILE_CREATED,
-            is_active=True,
+            is_active=False,  # Disabled by default
             source_config={
-                "path": "/mnt/storage/uploads",
+                "path": "/tmp/file-orbit/uploads",
                 "pattern": "*.mov",
                 "recursive": True
             },
             source_endpoint_id=local_id,
-            destination_endpoint_id=smb_id,
-            destination_path_template="/processed/{year}/{month}/{day}/{filename}",
+            destination_endpoint_id=local_id,  # Changed to local since SMB is disabled
+            destination_path_template="/tmp/file-orbit/processed/{year}/{month}/{day}/{filename}",
             file_pattern="*.mov",
-            delete_source_after_transfer=True
+            delete_source_after_transfer=False  # Changed to false for safety
         )
     ]
     
