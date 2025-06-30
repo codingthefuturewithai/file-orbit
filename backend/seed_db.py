@@ -75,7 +75,25 @@ async def seed_endpoints(session: AsyncSession):
                 "host": "fileserver.example.com",
                 "share": "shared-folder",
                 "user": "your-username",
+                "password": "your-password",
                 "domain": "WORKGROUP"
+            },
+            max_concurrent_transfers=3,
+            is_active=False,  # Disabled by default until configured
+            connection_status="not_configured"
+        ),
+        Endpoint(
+            id=str(uuid.uuid4()),
+            name="Example: SFTP Server",
+            type=EndpointType.SFTP,
+            config={
+                "host": "sftp.example.com",
+                "port": 22,
+                "user": "your-username",
+                "password": "your-password",
+                # For SSH key auth, use these instead:
+                # "key_file": "/home/user/.ssh/id_rsa",
+                # "key_passphrase": "passphrase-if-needed"
             },
             max_concurrent_transfers=3,
             is_active=False,  # Disabled by default until configured
@@ -87,11 +105,12 @@ async def seed_endpoints(session: AsyncSession):
         session.add(endpoint)
     
     # Store endpoint IDs for transfer templates
-    global local_id, limited_id, s3_id, smb_id
+    global local_id, limited_id, s3_id, smb_id, sftp_id
     local_id = endpoints[0].id
     limited_id = endpoints[1].id
     s3_id = endpoints[2].id
     smb_id = endpoints[3].id
+    sftp_id = endpoints[4].id
 
 async def seed_transfer_templates(session: AsyncSession):
     """Add sample transfer templates"""

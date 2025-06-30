@@ -333,6 +333,35 @@ const Endpoints: React.FC = () => {
                 onChange={(e) => updateConfig('password', e.target.value)}
                 placeholder={editingEndpoint ? '(unchanged)' : ''}
               />
+              <small className="form-text text-muted">
+                Leave empty if using SSH key authentication
+              </small>
+            </div>
+            <div className="form-group">
+              <label>SSH Key File (Optional)</label>
+              <input
+                type="text"
+                className="form-control"
+                value={formData.config.key_file || ''}
+                onChange={(e) => updateConfig('key_file', e.target.value)}
+                placeholder="/home/user/.ssh/id_rsa"
+              />
+              <small className="form-text text-muted">
+                Path to private SSH key for authentication
+              </small>
+            </div>
+            <div className="form-group">
+              <label>Key Passphrase (Optional)</label>
+              <input
+                type="password"
+                className="form-control"
+                value={formData.config.key_passphrase || ''}
+                onChange={(e) => updateConfig('key_passphrase', e.target.value)}
+                placeholder={editingEndpoint ? '(unchanged)' : ''}
+              />
+              <small className="form-text text-muted">
+                Passphrase for encrypted SSH key
+              </small>
             </div>
           </>
         );

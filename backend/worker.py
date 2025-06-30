@@ -261,12 +261,25 @@ class JobProcessor:
                 'domain': endpoint.config.get('domain', 'WORKGROUP')
             })
         elif endpoint.type.value == 'sftp':
-            config.update({
+            sftp_config = {
                 'host': endpoint.config.get('host'),
                 'user': endpoint.config.get('user'),
-                'pass': endpoint.config.get('password'),
                 'port': endpoint.config.get('port', 22)
-            })
+            }
+            
+            # Handle authentication - either key-based or password
+            if endpoint.config.get('key_file'):
+                sftp_config['key_file'] = endpoint.config.get('key_file')
+                if endpoint.config.get('key_passphrase'):
+                    sftp_config['key_passphrase'] = endpoint.config.get('key_passphrase')
+            else:
+                sftp_config['pass'] = endpoint.config.get('password')
+            
+            # Add known hosts file if specified
+            if endpoint.config.get('known_hosts_file'):
+                sftp_config['known_hosts_file'] = endpoint.config.get('known_hosts_file')
+                
+            config.update(sftp_config)
         
         # Configure the remote
         await self.rclone_service.configure_remote(name, config)

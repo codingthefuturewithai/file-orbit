@@ -82,11 +82,27 @@ class RcloneService:
                 config_content += f"user = {config.get('user', '')}\n"
                 config_content += f"pass = {config.get('pass', '')}\n"
                 config_content += f"domain = {config.get('domain', 'WORKGROUP')}\n"
+                # Add share if specified (though typically share is in the path)
+                if config.get('share'):
+                    config_content += f"share = {config.get('share', '')}\n"
             elif config['type'] == 'sftp':
                 config_content += f"host = {config.get('host', '')}\n"
                 config_content += f"user = {config.get('user', '')}\n"
-                config_content += f"pass = {config.get('pass', '')}\n"
                 config_content += f"port = {config.get('port', 22)}\n"
+                
+                # Support both password and key-based authentication
+                if config.get('key_file'):
+                    # Use SSH key authentication
+                    config_content += f"key_file = {config.get('key_file', '')}\n"
+                    if config.get('key_passphrase'):
+                        config_content += f"key_file_pass = {config.get('key_passphrase', '')}\n"
+                else:
+                    # Use password authentication
+                    config_content += f"pass = {config.get('pass', '')}\n"
+                
+                # Add known hosts file if specified
+                if config.get('known_hosts_file'):
+                    config_content += f"known_hosts_file = {config.get('known_hosts_file', '')}\n"
             
             config_content += "\n"
         
@@ -173,6 +189,20 @@ class RcloneService:
                 return f"{remote_name}:{bucket}/{clean_path}"
             else:
                 return f"{remote_name}:{path}"
+        elif remote_config.get('type') == 'smb':
+            # For SMB, path format is remote:share/path
+            # The share name should be in the path, not in config
+            clean_path = path.lstrip('/')
+            return f"{remote_name}:{clean_path}"
+        elif remote_config.get('type') == 'sftp':
+            # For SFTP, path format is remote:/absolute/path or remote:relative/path
+            # If path starts with /, it's absolute from root
+            # Otherwise it's relative to user's home directory
+            if path.startswith('/'):
+                return f"{remote_name}:{path}"
+            else:
+                # Relative path (from home directory)
+                return f"{remote_name}:{path}"
         else:
             # For other remotes, use remote:path format
             return f"{remote_name}:{path}"
@@ -254,8 +284,22 @@ class RcloneService:
                 exists = os.path.exists(path)
                 logger.info(f"Testing local path {path}: {'exists' if exists else 'not found'}")
                 return exists
+            elif config.get('type') == 'smb':
+                # For SMB, try to list the share root
+                # SMB paths need to include the share name
+                share = config.get('share', '')
+                if share:
+                    await self.list_files("test", share, "*")
+                else:
+                    # Try to list available shares
+                    await self.list_files("test", "", "*")
+                return True
+            elif config.get('type') == 'sftp':
+                # For SFTP, try to list home directory
+                await self.list_files("test", ".", "*")
+                return True
             else:
-                # For remotes, try to list root
+                # For other remotes, try to list root
                 await self.list_files("test", "/", "*")
                 return True
         except Exception as e:
