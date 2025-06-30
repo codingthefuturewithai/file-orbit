@@ -75,7 +75,7 @@ const JobDetailsModal: React.FC<JobDetailsModalProps> = ({ job, show, onClose, o
   return (
     <>
       <div className="modal-backdrop show" onClick={onClose}></div>
-      <div className="modal show d-block" tabIndex={-1}>
+      <div className="modal show" tabIndex={-1} style={{ display: 'flex' }}>
         <div className="modal-dialog modal-dialog-centered modal-lg">
           <div className="modal-content">
             <div className="modal-header">
