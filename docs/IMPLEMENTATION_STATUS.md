@@ -1,6 +1,6 @@
 # MVP Implementation Status
 
-Last Updated: December 6, 2024
+Last Updated: December 6, 2024 (Evening)
 
 ## 🟢 What's Implemented (Fully Functional!)
 
@@ -56,8 +56,10 @@ Last Updated: December 6, 2024
 ### Cloud Storage
 - ✅ UI supports S3, SMB, SFTP configuration
 - ✅ Backend models support all types
-- ❌ Needs real credentials (currently using local paths)
-- **To enable**: Add AWS credentials or SMB share access
+- ✅ **S3 transfers fully working** (with valid AWS credentials)
+- ❌ SMB/SFTP implementations not complete in rclone_service.py
+- **To enable S3**: Add AWS credentials to backend/.env
+- **To enable SMB/SFTP**: Implementation needed (6 hours work)
 
 ## 🔴 Not Implemented
 
@@ -139,17 +141,44 @@ docker exec -it ctf-rclone-postgres psql -U ctf_rclone -c "SELECT * FROM jobs;"
 docker exec -it ctf-rclone-redis redis-cli LLEN ctf_rclone:job_queue
 ```
 
+## Recent Updates (December 6, 2024 Evening)
+
+### Major Bug Fixes Session
+1. **Repository Portability Issues**:
+   - Fixed missing frontend/public files (index.html, manifest.json, pbs.png)
+   - Resolved database name mismatch (pbs_rclone → ctf_rclone)
+   - Created backend/.env.example template
+   - Removed duplicate .env.example from root
+   - Updated documentation to follow DRY principle
+
+2. **UI/UX Bug Fixes**:
+   - **Transfer Size Display**: Fixed job total_bytes and transferred_bytes not being calculated
+   - **Modal Positioning**: Fixed modals appearing off-screen due to CSS conflicts
+   - **Endpoints Edit Button**: Fixed regression caused by conflicting modal styles
+   - **CSS Conflicts**: Resolved App.css overriding index.css with !important flags
+
+3. **Infrastructure Improvements**:
+   - **manage.sh**: Fixed process killing errors with multiple PIDs
+   - **docker-compose.yml**: Removed obsolete version attribute
+   - **Seed Data**: Made examples clear with "Example:" prefix and safe /tmp paths
+
+4. **Documentation Updates**:
+   - Simplified setup instructions
+   - Created comprehensive linear quick start guide
+   - Updated CLAUDE.md with all recent fixes
+
 ## Summary
 
-**The MVP is fully functional for local file transfers!** Unlike the December 2024 status, all core features are now implemented and working. You can:
+**The MVP is fully functional for local file transfers!** All core features are now implemented and working. You can:
 - Create and monitor transfers
 - Set up event-driven workflows
 - Manage endpoints with throttling
 - Track transfer history
+- **NEW**: S3 transfers are fully working with proper credentials
 
 The main limitations are:
 - No authentication
-- Local transfers only (cloud needs configuration)
+- SMB/SFTP need implementation (cloud S3 works!)
 - Scheduler not auto-running
 
 This is a complete MVP that demonstrates all core functionality and is ready for cloud storage configuration and production hardening.

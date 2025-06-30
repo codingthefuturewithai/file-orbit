@@ -571,3 +571,29 @@ I will:
 3. **Prioritize Business Value** - S3 transfers can work in 30 minutes with credentials
 4. **Fix Implementation Gaps** - SMB/SFTP need 6 hours total implementation
 5. **Add Critical Tools** - Log viewer essential for debugging remote transfers
+
+## Recent Bug Fixes (December 6, 2024)
+
+### Repository Portability Issues Fixed
+1. **Frontend public files** - Added missing index.html, manifest.json, pbs.png to git
+2. **Database configuration** - Fixed hardcoded pbs_rclone → ctf_rclone mismatch
+3. **Environment setup** - Created backend/.env.example template
+4. **Documentation** - Applied DRY principle, centralized setup instructions
+
+### UI/UX Bugs Fixed
+1. **Transfer size display** - Fixed job total_bytes/transferred_bytes not being calculated
+   - Worker now properly tracks file sizes during transfers
+2. **Modal positioning** - Fixed modals appearing off-screen
+   - Removed conflicting CSS with !important flags
+   - Separated endpoints modal styles to avoid conflicts
+3. **Endpoints edit regression** - Fixed edit button not working
+   - Resolved CSS class conflicts between App.css and index.css
+4. **Manage script issues** - Fixed process killing errors
+   - Properly handles multiple PIDs with xargs
+   - Added force kill mechanism
+
+### Seed Data Improvements
+- Prefixed all examples with "Example:" 
+- Changed paths to /tmp/file-orbit/ (safe for any system)
+- Disabled S3/SMB endpoints by default
+- Added helpful print messages after seeding
