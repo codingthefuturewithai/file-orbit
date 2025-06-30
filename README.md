@@ -21,6 +21,12 @@ File Orbit provides a web-based orchestration layer on top of rclone to address 
 # Prerequisites
 brew install rclone  # Required for file transfers
 
+# Setup environment
+cd backend
+cp .env.example .env
+# Edit .env to add AWS credentials if using S3
+cd ..
+
 # Start all services
 ./manage.sh start
 

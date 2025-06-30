@@ -29,8 +29,13 @@ cd /Users/tkitchens/projects/consumer-apps/file-orbit
 ```
 
 ### Step 2: Set Up Environment Variables
+
+The backend requires a `.env` file:
 ```bash
+cd backend
 cp .env.example .env
+# Edit .env to add your AWS credentials if using S3
+cd ..
 ```
 
 ### Step 3: Set Up the Backend
