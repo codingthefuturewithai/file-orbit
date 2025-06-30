@@ -30,7 +30,7 @@ async def get_logs(
     
     # Construct log path - use absolute path for now
     # TODO: Make this configurable via environment variable
-    log_path = Path(f"/Users/tkitchens/projects/consumer-apps/file-orbit/logs/{log_type}.log")
+    log_path = Path(f"/Users/timkitchens/projects/consumer-apps/file-orbit/logs/{log_type}.log")
     
     # Check if log file exists
     if not log_path.exists():
