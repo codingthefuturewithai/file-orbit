@@ -1,5 +1,81 @@
 # CTF Rclone MVP Setup Guide
 
+## 🚀 Quick Start (After Git Clone)
+
+Run these commands in order after cloning the repository:
+
+```bash
+# 1. Clone and enter the repository
+git clone https://github.com/codingthefuturewithai/file-orbit.git
+cd file-orbit
+
+# 2. Install rclone (if not already installed)
+brew install rclone  # macOS
+# or: sudo apt-get install rclone  # Ubuntu/Debian
+# or: sudo yum install rclone      # RHEL/CentOS
+
+# 3. Set up backend environment
+cd backend
+cp .env.example .env
+# Optional: edit .env to add AWS credentials for S3 transfers
+
+# 4. Create and activate Python virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# 5. Install backend dependencies
+pip install -r requirements.txt
+
+# 6. Return to root directory
+cd ..
+
+# 7. Install frontend dependencies
+cd frontend
+npm install
+cd ..
+
+# 8. Start Docker containers (PostgreSQL, Redis, Rclone)
+docker-compose up -d
+
+# 9. Initialize the database
+cd backend
+source venv/bin/activate  # Make sure venv is active
+python init_db.py
+python seed_db.py
+cd ..
+
+# 10. Start all services
+./manage.sh start all
+
+# 11. Verify everything is running
+./manage.sh status
+```
+
+### Access the Application
+- **Web UI**: http://localhost:3000
+- **API Docs**: http://localhost:8000/docs
+- **Rclone Web**: http://localhost:5572
+
+### Test File Transfer
+```bash
+# Create test files
+cd backend
+python setup_test_data.py
+python update_test_endpoints.py
+
+# In the UI, create a transfer from "Local Storage" to "5TB Limited Storage"
+# Watch the worker logs: ./manage.sh logs worker
+```
+
+## Prerequisites
+
+- Docker and Docker Compose installed
+- Node.js 18+ installed
+- Python 3.11+ installed
+- Git installed
+- At least 4GB free RAM
+- Rclone installed on your system
+
 ## Current Status ✅
 
 **The MVP is fully functional** with:
@@ -9,79 +85,6 @@
 - ✅ Event-driven transfers for local files
 - ✅ Safe file transfers with temporary files
 - ✅ Optional checksum verification
-
-## Prerequisites
-
-- Docker and Docker Compose installed
-- Node.js 18+ installed
-- Python 3.11+ installed
-- Git installed
-- At least 4GB free RAM
-- Rclone installed on your system (for testing)
-
-## Quick Start Guide
-
-For the simplest setup, use the `manage.sh` script to start all services and initialize the project.
-
-### Step 1: Clone the Repository
-```bash
-cd /Users/tkitchens/projects/consumer-apps/file-orbit
-```
-
-### Step 2: Set Up Environment Variables
-
-The backend requires a `.env` file:
-```bash
-cd backend
-cp .env.example .env
-# Edit .env to add your AWS credentials if using S3
-cd ..
-```
-
-### Step 3: Set Up the Backend
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-
-2. Create a Python virtual environment:
-   ```bash
-   python3 -m venv venv
-   ```
-
-3. Activate the virtual environment:
-   ```bash
-   source venv/bin/activate
-   ```
-
-4. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-### Step 4: Set Up the Frontend
-1. Navigate to the frontend directory:
-   ```bash
-   cd ../frontend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-### Step 5: Start All Services
-```bash
-./manage.sh start
-```
-
-### Step 6: Verify Services
-```bash
-./manage.sh status
-```
-
-- **Frontend (UI)**: [http://localhost:3000](http://localhost:3000)
-- **Backend (API)**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ---
 

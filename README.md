@@ -15,28 +15,46 @@ File Orbit provides a web-based orchestration layer on top of rclone to address 
 - **Event-driven workflows** (S3 events trigger transfers)
 - **Scheduled transfers** with cron expressions
 
-## Quick Start
+## Quick Start (After Git Clone)
 
 ```bash
-# Prerequisites
-brew install rclone  # Required for file transfers
+# 1. Clone and enter the repository
+git clone https://github.com/codingthefuturewithai/file-orbit.git
+cd file-orbit
 
-# Setup environment
-cd backend
-cp .env.example .env
-# Edit .env to add AWS credentials if using S3
+# 2. Install rclone (required)
+brew install rclone  # macOS
+# sudo apt-get install rclone  # Ubuntu/Debian
+
+# 3. Set up backend environment
+cd backend && cp .env.example .env
+
+# 4. Install backend dependencies
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 cd ..
 
-# Start all services
-./manage.sh start
+# 5. Install frontend dependencies
+cd frontend && npm install && cd ..
 
-# Check status
-./manage.sh status
+# 6. Start Docker containers
+docker-compose up -d
 
-# Access the application
+# 7. Initialize database
+cd backend && source venv/bin/activate
+python init_db.py && python seed_db.py
+cd ..
+
+# 8. Start all services
+./manage.sh start all
+
+# 9. Access the application
 # UI: http://localhost:3000
 # API: http://localhost:8000/docs
 ```
+
+For detailed setup instructions, see [Setup Guide](docs/SETUP_GUIDE.md).
 
 ## Architecture
 
