@@ -14,9 +14,9 @@ class Settings(BaseSettings):
     
     # Database
     POSTGRES_SERVER: str = "localhost"
-    POSTGRES_USER: str = "pbs_rclone"
-    POSTGRES_PASSWORD: str = "pbs_rclone_password"
-    POSTGRES_DB: str = "pbs_rclone"
+    POSTGRES_USER: str = "ctf_rclone"
+    POSTGRES_PASSWORD: str = "ctf_rclone_password"
+    POSTGRES_DB: str = "ctf_rclone"
     DATABASE_URL: Optional[PostgresDsn] = None
     
     @validator("DATABASE_URL", pre=True)
@@ -47,11 +47,11 @@ class Settings(BaseSettings):
     RCLONE_RC_PASS: Optional[str] = None
     
     # Email
-    SMTP_HOST: str = "smtp.pbs.org"
+    SMTP_HOST: str = "smtp.ctf.org"
     SMTP_PORT: int = 587
     SMTP_USER: Optional[str] = None
     SMTP_PASSWORD: Optional[str] = None
-    SMTP_FROM: str = "noreply@pbs.org"
+    SMTP_FROM: str = "noreply@ctf.org"
     SMTP_TLS: bool = True
     
     # AWS (for S3 events)

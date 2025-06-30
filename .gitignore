@@ -86,8 +86,8 @@ out/
 .nuxt
 .output
 
-# Gatsby
-public
+# Gatsby (not applicable to this project)
+# public
 
 # Storybook
 .out
