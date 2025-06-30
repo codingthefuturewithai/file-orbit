@@ -19,35 +19,29 @@ cd backend
 cp .env.example .env
 # Optional: edit .env to add AWS credentials for S3 transfers
 
-# 4. Create and activate Python virtual environment
+# 4. Create Python virtual environment and install dependencies
 python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# 5. Install backend dependencies
 pip install -r requirements.txt
 
-# 6. Return to root directory
-cd ..
-
-# 7. Install frontend dependencies
-cd frontend
-npm install
-cd ..
-
-# 8. Start Docker containers (PostgreSQL, Redis, Rclone)
-docker-compose up -d
-
-# 9. Initialize the database
-cd backend
-source venv/bin/activate  # Make sure venv is active
+# 5. Initialize the database
 python init_db.py
 python seed_db.py
 cd ..
 
-# 10. Start all services
-./manage.sh start all
+# 6. Install frontend dependencies
+cd frontend
+npm install
+cd ..
 
-# 11. Verify everything is running
+# 7. Start everything with one command
+./manage.sh start all
+# This command automatically:
+# - Starts Docker containers (PostgreSQL, Redis, Rclone)
+# - Creates Python venv if needed
+# - Starts backend API, frontend UI, and worker services
+
+# 8. Verify everything is running
 ./manage.sh status
 ```
 
@@ -88,9 +82,9 @@ python update_test_endpoints.py
 
 ---
 
-# Detailed Setup Instructions
+# Manual Setup Instructions (Advanced)
 
-For advanced users or troubleshooting, follow these detailed steps:
+**Note:** The quick start above using `manage.sh` is recommended. These manual steps show what `manage.sh` does internally, useful for debugging or custom setups.
 
 ## Step 1: Set Up Environment Variables
 ```bash

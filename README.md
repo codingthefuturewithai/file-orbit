@@ -18,40 +18,32 @@ File Orbit provides a web-based orchestration layer on top of rclone to address 
 ## Quick Start (After Git Clone)
 
 ```bash
-# 1. Clone and enter the repository
+# 1. Clone and enter repository
 git clone https://github.com/codingthefuturewithai/file-orbit.git
 cd file-orbit
 
-# 2. Install rclone (required)
+# 2. Install rclone
 brew install rclone  # macOS
-# sudo apt-get install rclone  # Ubuntu/Debian
 
-# 3. Set up backend environment
-cd backend && cp .env.example .env
-
-# 4. Install backend dependencies
+# 3. Setup backend
+cd backend
+cp .env.example .env
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+
+# 4. Initialize database
+python init_db.py
+python seed_db.py
 cd ..
 
-# 5. Install frontend dependencies
+# 5. Install frontend
 cd frontend && npm install && cd ..
 
-# 6. Start Docker containers
-docker-compose up -d
-
-# 7. Initialize database
-cd backend && source venv/bin/activate
-python init_db.py && python seed_db.py
-cd ..
-
-# 8. Start all services
+# 6. Start everything
 ./manage.sh start all
 
-# 9. Access the application
-# UI: http://localhost:3000
-# API: http://localhost:8000/docs
+# Access at http://localhost:3000
 ```
 
 For detailed setup instructions, see [Setup Guide](docs/SETUP_GUIDE.md).
