@@ -141,8 +141,12 @@ stop_service() {
         local pid
         pid=$(cat "$pid_file")
         if ps -p "$pid" > /dev/null 2>&1; then
-            kill "$pid"
+            kill "$pid" 2>/dev/null || true
             sleep 1
+            # Force kill if still running
+            if ps -p "$pid" > /dev/null 2>&1; then
+                kill -9 "$pid" 2>/dev/null || true
+            fi
         else
             echo -e "${YELLOW}Stale PID file found for $service.${NC}"
         fi
@@ -152,10 +156,11 @@ stop_service() {
     # Kill any process using the port
     if [ -n "$port" ]; then
         local pids_on_port
-        pids_on_port=$(lsof -t -i:"$port")
+        pids_on_port=$(lsof -t -i:"$port" 2>/dev/null)
         if [ -n "$pids_on_port" ]; then
             echo -e "${YELLOW}Force stopping process(es) on port $port...${NC}"
-            kill -9 "$pids_on_port"
+            # Convert newlines to spaces and kill all PIDs
+            echo "$pids_on_port" | xargs kill -9 2>/dev/null || true
         fi
     fi
     
