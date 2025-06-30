@@ -401,14 +401,14 @@ const Endpoints: React.FC = () => {
       </div>
 
       {showModal && (
-        <div className="modal-backdrop" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className="endpoints-modal-backdrop" onClick={() => setShowModal(false)}>
+          <div className="endpoints-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="endpoints-modal-header">
               <h2>{editingEndpoint ? 'Edit Endpoint' : 'Add Endpoint'}</h2>
               <button className="close-btn" onClick={() => setShowModal(false)}>×</button>
             </div>
             <form onSubmit={handleSubmit}>
-              <div className="modal-body">
+              <div className="endpoints-modal-body">
                 <div className="form-group">
                   <label>Name</label>
                   <input
@@ -480,7 +480,7 @@ const Endpoints: React.FC = () => {
                 </div>
               </div>
 
-              <div className="modal-footer">
+              <div className="endpoints-modal-footer">
                 <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
                   Cancel
                 </button>
