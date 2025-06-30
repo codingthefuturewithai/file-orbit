@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ctf_rclone_password
       POSTGRES_DB: ctf_rclone
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

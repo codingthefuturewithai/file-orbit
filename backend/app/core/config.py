@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     
     # Database
     POSTGRES_SERVER: str = "localhost"
+    POSTGRES_PORT: int = 5432
     POSTGRES_USER: str = "ctf_rclone"
     POSTGRES_PASSWORD: str = "ctf_rclone_password"
     POSTGRES_DB: str = "ctf_rclone"
@@ -23,7 +24,7 @@ class Settings(BaseSettings):
     def assemble_db_connection(cls, v: Optional[str], values: dict) -> str:
         if isinstance(v, str):
             return v
-        return f"postgresql+asyncpg://{values.get('POSTGRES_USER')}:{values.get('POSTGRES_PASSWORD')}@{values.get('POSTGRES_SERVER')}/{values.get('POSTGRES_DB')}"
+        return f"postgresql+asyncpg://{values.get('POSTGRES_USER')}:{values.get('POSTGRES_PASSWORD')}@{values.get('POSTGRES_SERVER')}:{values.get('POSTGRES_PORT')}/{values.get('POSTGRES_DB')}"
     
     # Redis
     REDIS_HOST: str = "localhost"
@@ -72,7 +73,7 @@ class Settings(BaseSettings):
     THROTTLE_CHECK_INTERVAL: int = 1  # seconds
     
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=[".env", "../.env"],  # Check backend/.env first, then root/.env
         env_file_encoding="utf-8",
         case_sensitive=True
     )

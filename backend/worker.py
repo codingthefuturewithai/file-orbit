@@ -285,7 +285,24 @@ class JobProcessor:
             
             # Build source and destination paths
             source_path = self._build_remote_path("source", job.source_endpoint, job.source_path, transfer.file_path)
-            dest_path = self._build_remote_path("dest", job.destination_endpoint, job.destination_path, transfer.file_name)
+            
+            # For destination, apply template substitution if the path contains template variables
+            dest_base_path = job.destination_path
+            if any(var in dest_base_path for var in ['{year}', '{month}', '{day}', '{filename}', '{timestamp}']):
+                # Apply template substitution
+                substituted_path = self._apply_path_template(dest_base_path, transfer.file_name)
+                # Extract the directory path (remove the filename if it's at the end)
+                from pathlib import Path
+                path_obj = Path(substituted_path)
+                if path_obj.name == transfer.file_name:
+                    # If the path ends with the filename, use the parent directory
+                    dest_base_path = str(path_obj.parent)
+                else:
+                    # Otherwise use the full substituted path
+                    dest_base_path = substituted_path
+            
+            # Build the final destination path
+            dest_path = self._build_remote_path("dest", job.destination_endpoint, dest_base_path, "")
             
             # Track this transfer
             transfer_task = asyncio.create_task(
@@ -331,12 +348,42 @@ class JobProcessor:
             # file_path is relative (destination scenario)
             if base_path == '/' or not base_path:
                 path = file_path
-            else:
+            elif file_path:
                 # Properly join paths
                 path = str(Path(base_path) / file_path)
+            else:
+                # If no file_path provided, just use base_path
+                path = base_path
         
         # Let the rclone service build the final path
         return self.rclone_service._build_path(remote_name, path)
+    
+    def _apply_path_template(self, template: str, source_file: str) -> str:
+        """Apply variables to destination path template"""
+        import os
+        from datetime import datetime
+        
+        filename = os.path.basename(source_file)
+        name_without_ext, ext = os.path.splitext(filename)
+        now = datetime.now()
+        
+        replacements = {
+            '{filename}': filename,
+            '{name}': name_without_ext,
+            '{ext}': ext,
+            '{year}': str(now.year),
+            '{month}': f"{now.month:02d}",
+            '{day}': f"{now.day:02d}",
+            '{hour}': f"{now.hour:02d}",
+            '{minute}': f"{now.minute:02d}",
+            '{timestamp}': str(int(now.timestamp())),
+        }
+        
+        result = template
+        for key, value in replacements.items():
+            result = result.replace(key, value)
+            
+        return result
     
     async def _run_transfer_with_progress(self, db, transfer: Transfer, source: str, dest: str, delete_source: bool):
         """Run the transfer and monitor progress"""

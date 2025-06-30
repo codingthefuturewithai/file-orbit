@@ -83,7 +83,18 @@ start_service() {
         return 0
     fi
 
-    if is_port_in_use "$port"; then
+    # For frontend, find an available port starting from 3000
+    if [ "$service" = "frontend" ]; then
+        local test_port=3000
+        while is_port_in_use "$test_port"; do
+            test_port=$((test_port + 1))
+        done
+        if [ "$test_port" != "3000" ]; then
+            echo -e "${YELLOW}Port 3000 is in use. Starting frontend on port $test_port${NC}"
+        fi
+        # Replace PORT in the start command
+        start_command=$(echo "$start_command" | sed "s|npm start|PORT=$test_port npm start|")
+    elif is_port_in_use "$port"; then
         echo -e "${RED}Port $port for $service is already in use by another process.${NC}"
         return 1
     fi
@@ -121,7 +132,7 @@ start_all_services() {
     check_venv
     
     start_service "backend" "cd '$BACKEND_DIR' && source venv/bin/activate && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
-    start_service "frontend" "cd '$FRONTEND_DIR' && npm start"
+    start_service "frontend" "cd '$FRONTEND_DIR' && BROWSER=none npm start"
     start_service "worker" "cd '$BACKEND_DIR' && source venv/bin/activate && python worker.py"
     start_service "event-monitor" "cd '$BACKEND_DIR' && source venv/bin/activate && python event_monitor_service.py"
     # start_service "scheduler" "cd '$BACKEND_DIR' && source venv/bin/activate && python scheduler_service.py"
@@ -153,14 +164,13 @@ stop_service() {
         rm -f "$pid_file"
     fi
 
-    # Kill any process using the port
-    if [ -n "$port" ]; then
+    # Only warn about port usage if we didn't have a PID file
+    # This means another process is using the port, not our managed process
+    if [ ! -f "$pid_file" ] && [ -n "$port" ]; then
         local pids_on_port
         pids_on_port=$(lsof -t -i:"$port" 2>/dev/null)
         if [ -n "$pids_on_port" ]; then
-            echo -e "${YELLOW}Force stopping process(es) on port $port...${NC}"
-            # Convert newlines to spaces and kill all PIDs
-            echo "$pids_on_port" | xargs kill -9 2>/dev/null || true
+            echo -e "${YELLOW}Note: Port $port is still in use by another process (not managed by this script).${NC}"
         fi
     fi
     
@@ -192,8 +202,12 @@ check_status() {
 
     if is_running_pid "$service"; then
         echo -e "${GREEN}✓ $service is running (PID: $(cat "$pid_file"))${NC}"
+    elif [ "$service" = "frontend" ] && is_port_in_use "$port"; then
+        # For frontend, port in use might mean React started on a different port
+        echo -e "${YELLOW}⚠ $service process not tracked by manage.sh, but something is using port $port${NC}"
+        echo -e "${YELLOW}  (React may have started on a different port - check logs)${NC}"
     elif is_port_in_use "$port"; then
-        echo -e "${YELLOW}⚠ $service is not running via manage.sh, but port $port is in use.${NC}"
+        echo -e "${YELLOW}⚠ $service is not running via manage.sh, but port $port is in use by another process${NC}"
     else
         echo -e "${RED}✗ $service is not running${NC}"
     fi
@@ -230,7 +244,7 @@ case "$1" in
             case "$2" in
                 docker) start_docker ;;
                 backend) check_venv; start_service "backend" "cd '$BACKEND_DIR' && source venv/bin/activate && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000" ;;
-                frontend) start_service "frontend" "cd '$FRONTEND_DIR' && npm start" ;;
+                frontend) start_service "frontend" "cd '$FRONTEND_DIR' && BROWSER=none npm start" ;;
                 worker) check_venv; start_service "worker" "cd '$BACKEND_DIR' && source venv/bin/activate && python worker.py" ;;
                 event-monitor) check_venv; start_service "event-monitor" "cd '$BACKEND_DIR' && source venv/bin/activate && python event_monitor_service.py" ;;
                 scheduler) check_venv; start_service "scheduler" "cd '$BACKEND_DIR' && source venv/bin/activate && python scheduler_service.py" ;;
