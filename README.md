@@ -2,6 +2,10 @@
 
 Enterprise file transfer orchestration system built on top of rclone for machine-to-machine and cloud-to-on-premise transfers.
 
+## 🚀 Getting Started
+
+**[Follow the Setup Guide](docs/SETUP_GUIDE.md)** for step-by-step installation instructions.
+
 ## ✅ Current Status: Functional MVP with Local Transfers
 
 **The MVP is fully functional for local file transfers with event-driven capabilities, manual transfers, and comprehensive endpoint management. Cloud storage integration (S3, SMB, SFTP) requires configuration.**
@@ -14,39 +18,6 @@ File Orbit provides a web-based orchestration layer on top of rclone to address 
 - **Machine-to-Machine** transfers (SFTP → SFTP)
 - **Event-driven workflows** (S3 events trigger transfers)
 - **Scheduled transfers** with cron expressions
-
-## Quick Start (After Git Clone)
-
-```bash
-# 1. Clone and enter repository
-git clone https://github.com/codingthefuturewithai/file-orbit.git
-cd file-orbit
-
-# 2. Install rclone
-brew install rclone  # macOS
-
-# 3. Setup backend
-cd backend
-cp .env.example .env
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-# 4. Initialize database
-python init_db.py
-python seed_db.py
-cd ..
-
-# 5. Install frontend
-cd frontend && npm install && cd ..
-
-# 6. Start everything
-./manage.sh start all
-
-# Access at http://localhost:3000
-```
-
-For detailed setup instructions, see [Setup Guide](docs/SETUP_GUIDE.md).
 
 ## Architecture
 
