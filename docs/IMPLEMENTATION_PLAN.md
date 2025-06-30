@@ -22,7 +22,7 @@ Focus on enabling **machine-to-machine** and **cloud-to-on-premise** transfers w
 
 ## Phase 1: Enable Remote Transfers (Week 1)
 
-### Day 1-2: Quick Wins
+### Completed Items
 1. **S3 Integration** ✅ COMPLETED (Dec 6, 2024)
    - Added AWS credentials to .env file
    - Fixed critical bugs:
@@ -32,20 +32,22 @@ Focus on enabling **machine-to-machine** and **cloud-to-on-premise** transfers w
    - Successfully tested S3 → local transfers
    - Added transfer edit feature for quick fixes
 
-2. **Log Viewer UI** (3 hours)
-   ```python
-   # Backend API endpoint
-   @router.get("/api/v1/logs/{log_type}")
-   async def get_logs(log_type: str, lines: int = 100, filter: str = None)
-   
-   # Frontend component
-   - Log viewer page with filtering
-   - Real-time tailing via WebSocket
-   - Support backend.log, worker.log, event-monitor.log
-   ```
+2. **Log Viewer UI** ✅ COMPLETED (June 30, 2025)
+   - Backend API endpoint implemented
+   - Frontend shows logs for all services
+   - Filtering and auto-refresh working
+   - Fixed hardcoded username path issue
 
-### Day 3-4: SMB Implementation
-3. **SMB/CIFS Support** (3 hours)
+3. **Path Template Substitution** ✅ COMPLETED (June 30, 2025)
+   - Fixed template variables not being replaced
+   - Supports {year}, {month}, {day}, {filename}, {timestamp}
+   - Resolved files being created as directories
+
+### Next Priority (Revised June 30, 2025)
+**USER DECISION**: Prioritize SMB/SFTP over log path configuration
+
+### Day 1-2: SMB/SFTP Implementation
+1. **SMB/CIFS Support** (3 hours) - NEXT PRIORITY
    ```python
    # Update rclone_service.py
    elif endpoint.type == 'smb':

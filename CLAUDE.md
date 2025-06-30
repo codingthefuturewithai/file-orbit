@@ -636,16 +636,25 @@ To continue where we left off:
 3. Access UI: http://localhost:3000 (or next available port)
 4. Current branch: main (all features merged)
 
-### Next Priority Tasks (from Implementation Plan)
-1. **Enable SMB/SFTP Endpoints** (3-6 hours)
+### Next Priority Tasks (Revised June 30, 2025)
+
+**USER DECISION**: Prioritize SMB/SFTP implementation over log path configuration
+
+1. **Enable SMB/SFTP Endpoints** (3-6 hours) - NEXT PRIORITY
    - Implement SMB support in rclone_service.py
    - Implement SFTP support with key/password auth
    - Test with real network shares
+   - Why first: Unlocks core enterprise use cases (Windows shares, machine-to-machine transfers)
+   - Key files to modify:
+     - `backend/app/services/rclone_service.py` - Add endpoint configuration
+     - `backend/worker.py` - Ensure proper path handling
+     - Frontend already supports these types (no changes needed)
 
-2. **Make Log Paths Configurable** (1 hour)
+2. **Make Log Paths Configurable** (1 hour) - MOVED TO SECOND
    - Remove hardcoded paths from logs.py
    - Use environment variables or relative paths
    - Support standard deployment patterns
+   - Why second: Mostly a convenience/portability issue, not blocking core functionality
 
 3. **Enable Scheduler Service** (1 hour)
    - Add scheduler to manage.sh startup
