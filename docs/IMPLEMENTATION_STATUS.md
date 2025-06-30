@@ -1,6 +1,6 @@
 # MVP Implementation Status
 
-Last Updated: December 6, 2024 (Evening)
+Last Updated: June 30, 2025
 
 ## 🟢 What's Implemented (Fully Functional!)
 
@@ -43,7 +43,8 @@ Last Updated: December 6, 2024 (Evening)
 - ✅ Enhanced error messages for validation failures (NEW - Dec 6, 2024)
 - ✅ Bandwidth parsing with human-readable formats (10M, 1G, etc.)
 - ✅ Transfer edit functionality (NEW - Dec 6, 2024)
-- ❌ Log viewer UI (implemented backend, not yet frontend)
+- ✅ **Log viewer UI** (NEW - June 30, 2025) - Shows system logs for all services
+- ✅ **Path template substitution** (NEW - June 30, 2025) - {year}, {month}, {day}, {filename}
 
 ## 🟡 Partially Implemented
 
@@ -141,7 +142,41 @@ docker exec -it ctf-rclone-postgres psql -U ctf_rclone -c "SELECT * FROM jobs;"
 docker exec -it ctf-rclone-redis redis-cli LLEN ctf_rclone:job_queue
 ```
 
-## Recent Updates (December 6, 2024 Evening)
+## Recent Updates (June 30, 2025)
+
+### Major Infrastructure and UI Fixes
+1. **Path Template Substitution**:
+   - Fixed bug where template variables weren't being replaced
+   - Now properly handles {year}, {month}, {day}, {filename}, {timestamp}
+   - Resolved issue where files were created as directories
+   - Ensures proper file naming in destination paths
+
+2. **PostgreSQL Port Configuration**:
+   - Added POSTGRES_PORT setting to avoid conflicts with local instances
+   - Reorganized environment files (infrastructure config at root level)
+   - Can now run alongside existing PostgreSQL servers
+
+3. **Frontend Fixes**:
+   - Fixed modal display issues (removed conflicting CSS)
+   - Resolved gray backdrop with no content problem
+   - All modals now properly display across browsers
+
+4. **Service Management**:
+   - manage.sh now intelligently handles port conflicts
+   - Frontend automatically finds available ports (starting from 3000)
+   - No longer kills processes it doesn't manage
+
+5. **Log Viewer**:
+   - Fixed hardcoded username path issue
+   - System logs now display properly for all services
+   - Added filtering and auto-refresh capabilities
+
+6. **Documentation**:
+   - Added 6 UI screenshots to README
+   - Shows all major features in action
+   - Helps users understand capabilities visually
+
+## Previous Updates (December 6, 2024 Evening)
 
 ### Major Bug Fixes Session
 1. **Repository Portability Issues**:

@@ -572,6 +572,91 @@ I will:
 4. **Fix Implementation Gaps** - SMB/SFTP need 6 hours total implementation
 5. **Add Critical Tools** - Log viewer essential for debugging remote transfers
 
+## Recent Updates (June 30, 2025 - Path Templates & Infrastructure Fixes)
+
+### Major Fixes Completed This Session
+1. **Path Template Substitution** - FIXED
+   - Added `_apply_path_template` method to worker.py
+   - Now properly substitutes {year}, {month}, {day}, {filename}, {timestamp}
+   - Fixed issue where files were created as directories
+   - Ensures rclone receives correct destination paths without duplicating filenames
+
+2. **PostgreSQL Port Conflicts** - FIXED
+   - Added POSTGRES_PORT configuration to support non-standard ports
+   - Reorganized environment files (infrastructure config at root level)
+   - Docker Compose now uses configurable port mapping
+   - Can now run alongside existing PostgreSQL instances
+
+3. **Frontend Modal Display** - FIXED
+   - Removed Bootstrap-style display:none CSS that was preventing modals from showing
+   - Fixed gray backdrop with no content issue
+   - Modals now properly display in all browsers
+
+4. **manage.sh Port Handling** - FIXED
+   - Script now intelligently finds available ports for frontend (starting from 3000)
+   - No longer kills processes it doesn't manage
+   - Provides helpful messages about port conflicts
+   - Supports running multiple instances on different ports
+
+5. **Logs Panel** - FIXED
+   - Corrected hardcoded username path from tkitchens to timkitchens
+   - Logs now display properly in UI
+   - TODO: Make log paths configurable via environment variable
+
+6. **Git Ignore Cleanup** - FIXED
+   - Removed previously tracked s3-transfers/ and destination-files/ directories
+   - These are now properly ignored going forward
+   - Source files continue to be tracked for testing
+
+### Documentation & UI Updates
+- Added 6 UI screenshots to README showing all major features:
+  - Dashboard with real-time statistics
+  - Endpoint configuration interface  
+  - Transfer creation form with template variables
+  - Transfer template automation
+  - Transfer history with filtering
+  - System logs viewer
+- Screenshots demonstrate working functionality across all modules
+
+### Current Working State
+- ✅ S3 → Local transfers working with path templates
+- ✅ Manual transfer creation and execution  
+- ✅ Transfer history and filtering
+- ✅ Endpoint management (CRUD operations)
+- ✅ Transfer templates (Event Rules)
+- ✅ System logs viewer (all services)
+- ✅ Real-time transfer progress monitoring
+- ✅ Retry functionality for failed transfers
+- ✅ Path template substitution in destination paths
+
+### Session Resume Instructions for Next Time
+To continue where we left off:
+1. Navigate to project: `cd /Users/timkitchens/projects/consumer-apps/file-orbit`
+2. Start services: `./manage.sh start all`
+3. Access UI: http://localhost:3000 (or next available port)
+4. Current branch: main (all features merged)
+
+### Next Priority Tasks (from Implementation Plan)
+1. **Enable SMB/SFTP Endpoints** (3-6 hours)
+   - Implement SMB support in rclone_service.py
+   - Implement SFTP support with key/password auth
+   - Test with real network shares
+
+2. **Make Log Paths Configurable** (1 hour)
+   - Remove hardcoded paths from logs.py
+   - Use environment variables or relative paths
+   - Support standard deployment patterns
+
+3. **Enable Scheduler Service** (1 hour)
+   - Add scheduler to manage.sh startup
+   - Test scheduled transfers
+   - Update UI to show scheduled jobs
+
+4. **S3 Event Integration** (if AWS access available)
+   - Configure SQS for S3 events
+   - Test event-driven transfers
+   - Implement retry logic
+
 ## Recent Bug Fixes (December 6, 2024)
 
 ### Repository Portability Issues Fixed
