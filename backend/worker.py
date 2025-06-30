@@ -147,6 +147,7 @@ class JobProcessor:
             
             # Create transfer records
             transfers = []
+            total_size = 0
             for file_info in files:
                 transfer = Transfer(
                     id=str(uuid.uuid4()),
@@ -158,15 +159,28 @@ class JobProcessor:
                 )
                 db.add(transfer)
                 transfers.append(transfer)
+                total_size += file_info['size']
+            
+            # Update job with total files and bytes
+            job.total_files = len(files)
+            job.total_bytes = total_size
             
             await db.commit()
             
             # Execute transfers
             success_count = 0
+            transferred_size = 0
             for transfer in transfers:
                 try:
                     await self._execute_transfer(db, job, transfer)
                     success_count += 1
+                    transferred_size += transfer.file_size
+                    
+                    # Update job progress
+                    job.transferred_files = success_count
+                    job.transferred_bytes = transferred_size
+                    job.progress_percentage = int((success_count / len(transfers)) * 100)
+                    await db.commit()
                 except Exception as e:
                     logger.error(f"Transfer {transfer.id} failed: {e}")
                     transfer.status = TransferStatus.FAILED
