@@ -58,9 +58,14 @@ Last Updated: June 30, 2025
 - ✅ UI supports S3, SMB, SFTP configuration
 - ✅ Backend models support all types
 - ✅ **S3 transfers fully working** (with valid AWS credentials)
-- ❌ SMB/SFTP implementations not complete in rclone_service.py
-- **To enable S3**: Add AWS credentials to backend/.env
-- **To enable SMB/SFTP**: Implementation needed (6 hours work)
+- ✅ **SMB/SFTP implementations COMPLETE** (July 1, 2025)
+  - Full SMB/CIFS support with domain authentication
+  - SFTP with password and SSH key authentication
+  - Path handling for shares and remote directories
+  - Configuration validated with rclone
+- **S3 Ready**: AWS credentials already in backend/.env
+- **SMB Ready**: User has local MacBook share configured (10.0.0.126/smb-test-mount)
+- **SFTP Ready**: Implementation complete, needs real server for testing
 
 ## 🔴 Not Implemented
 
@@ -142,7 +147,31 @@ docker exec -it ctf-rclone-postgres psql -U ctf_rclone -c "SELECT * FROM jobs;"
 docker exec -it ctf-rclone-redis redis-cli LLEN ctf_rclone:job_queue
 ```
 
-## Recent Updates (June 30, 2025)
+## Recent Updates (July 1, 2025)
+
+### SMB/SFTP Implementation Complete
+1. **Backend Implementation**:
+   - Added full SMB/CIFS support in rclone_service.py
+   - Added SFTP support with password and SSH key authentication
+   - Updated worker.py endpoint configuration
+   - Created comprehensive test suite
+
+2. **Frontend Updates**:
+   - Enhanced SFTP form with SSH key fields
+   - Added helpful placeholders and validation
+
+3. **Testing Infrastructure**:
+   - test_rclone_config.py - Unit tests (PASSED)
+   - test_rclone_integration.py - Integration tests (PASSED)
+   - test_remote_endpoints.py - Manual testing script
+   - create_s3_to_smb_transfer.py - Ready for S3→SMB test
+
+4. **User's Setup**:
+   - Local MacBook SMB share configured: smb-test-mount
+   - Endpoint "Test SMB Share" updated with credentials
+   - Ready to test S3 → SMB transfers
+
+## Previous Updates (June 30, 2025)
 
 ### Major Infrastructure and UI Fixes
 1. **Path Template Substitution**:

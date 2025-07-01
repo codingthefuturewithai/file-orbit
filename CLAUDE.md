@@ -636,35 +636,59 @@ To continue where we left off:
 3. Access UI: http://localhost:3000 (or next available port)
 4. Current branch: main (all features merged)
 
-### Next Priority Tasks (Revised June 30, 2025)
+### Recent Updates (July 1, 2025 - SMB/SFTP Implementation Complete)
 
-**USER DECISION**: Prioritize SMB/SFTP implementation over log path configuration
+### SMB/SFTP Implementation ✅ COMPLETE
+1. **Backend Implementation**:
+   - Full SMB/CIFS support in `rclone_service.py` with proper path handling
+   - Comprehensive SFTP support with both password and SSH key authentication
+   - Proper endpoint configuration in worker.py
+   - Path building logic for remote:share/path format
 
-1. **Enable SMB/SFTP Endpoints** (3-6 hours) - NEXT PRIORITY
-   - Implement SMB support in rclone_service.py
-   - Implement SFTP support with key/password auth
-   - Test with real network shares
-   - Why first: Unlocks core enterprise use cases (Windows shares, machine-to-machine transfers)
-   - Key files to modify:
-     - `backend/app/services/rclone_service.py` - Add endpoint configuration
-     - `backend/worker.py` - Ensure proper path handling
-     - Frontend already supports these types (no changes needed)
+2. **Frontend Updates**:
+   - Enhanced SFTP form with SSH key configuration fields
+   - Added helpful hints and validation for optional fields
+   - SMB form already had all necessary fields (host, share, user, password, domain)
 
-2. **Make Log Paths Configurable** (1 hour) - MOVED TO SECOND
+3. **Testing & Documentation**:
+   - Created `test_rclone_config.py` - Unit tests for configuration (✅ PASSED)
+   - Created `test_rclone_integration.py` - Integration tests with rclone (✅ PASSED)
+   - Created `SMB_SFTP_SETUP.md` - Comprehensive setup guide
+   - Created `test_remote_endpoints.py` - Manual testing script
+   - Updated seed data with example SMB/SFTP endpoints
+
+4. **User's Local SMB Share Setup**:
+   - User configured local MacBook SMB share: `smb-test-mount`
+   - Updated "Test SMB Share" endpoint with:
+     - Host: 10.0.0.126 (MacBook's local IP)
+     - Share: smb-test-mount
+     - User: tkitchens
+     - Password: [configured]
+   - Ready to test S3 → SMB transfers
+   - Created `create_s3_to_smb_transfer.py` script for easy transfer creation
+
+### Next Priority Tasks (Revised July 1, 2025)
+
+1. **Test S3 to SMB Transfer** (Ready to test) - NEXT PRIORITY
+   - User has local SMB share configured and ready
+   - S3 bucket already has AWS credentials configured
+   - Script ready: `create_s3_to_smb_transfer.py`
+   - Will transfer from S3 bucket to local MacBook SMB share
+
+2. **Make Log Paths Configurable** (1 hour)
    - Remove hardcoded paths from logs.py
    - Use environment variables or relative paths
    - Support standard deployment patterns
-   - Why second: Mostly a convenience/portability issue, not blocking core functionality
 
 3. **Enable Scheduler Service** (1 hour)
    - Add scheduler to manage.sh startup
    - Test scheduled transfers
    - Update UI to show scheduled jobs
 
-4. **S3 Event Integration** (if AWS access available)
-   - Configure SQS for S3 events
-   - Test event-driven transfers
-   - Implement retry logic
+4. **Production Hardening** (Phase 3 from implementation plan)
+   - Credential encryption
+   - Retry logic for failed transfers
+   - Health checks and monitoring
 
 ## Recent Bug Fixes (December 6, 2024)
 
