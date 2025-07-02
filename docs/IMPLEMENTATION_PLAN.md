@@ -14,13 +14,22 @@ Focus on enabling **machine-to-machine** and **cloud-to-on-premise** transfers w
 - ✅ Job execution fixed (was stuck in queued status)
 
 ### What Doesn't Work (Required for Production)
-- ❌ S3 transfers - Code exists but needs AWS credentials
-- ❌ SMB/CIFS transfers - UI exists but rclone config not implemented
-- ❌ SFTP transfers - UI exists but rclone config not implemented
+- ✅ S3 transfers - WORKING (AWS credentials configured)
+- ✅ SMB/CIFS transfers - IMPLEMENTED (July 1, 2025) - needs real endpoint testing
+- ✅ SFTP transfers - IMPLEMENTED (July 1, 2025) - needs real endpoint testing
 - ❌ S3 event monitoring - SQS integration not configured
 - ❌ Distributed architecture - Cannot control transfers between servers
+- ⚠️ Throttling - Only checks slots, doesn't acquire them (race condition)
 
 ## Phase 1: Enable Remote Transfers (Week 1)
+
+### Critical Bug Fix Required (July 2, 2025)
+**Throttling Implementation** (2-3 hours)
+- Current implementation only checks slots, doesn't acquire them
+- Add proper slot acquisition/release in worker.py
+- Wrap job execution in try/finally to ensure slot release
+- Test with multiple concurrent jobs to verify
+- Consider future enhancement for file-level throttling
 
 ### Completed Items
 1. **S3 Integration** ✅ COMPLETED (Dec 6, 2024)

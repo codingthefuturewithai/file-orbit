@@ -1,53 +1,47 @@
 # File Orbit
 
-Enterprise file transfer orchestration system built on top of rclone for machine-to-machine and cloud-to-on-premise transfers.
+Enterprise file transfer orchestration system built on top of rclone for automated, reliable file transfers between cloud storage, network shares, and local systems.
 
 ## 🚀 Getting Started
 
-**[Follow the Setup Guide](docs/SETUP_GUIDE.md)** for step-by-step installation instructions.
+**[Follow the Setup Guide](docs/SETUP_GUIDE.md)** for installation and configuration instructions.
 
-## ✅ Current Status: Functional MVP with Local Transfers
+## What File Orbit Does Today
 
-**The MVP is fully functional for local file transfers with event-driven capabilities, manual transfers, and comprehensive endpoint management. Cloud storage integration (S3, SMB, SFTP) requires configuration.**
+File Orbit provides a web-based interface for managing file transfers with these current capabilities:
 
-## Overview
+- **Automated Transfers**: Trigger transfers when files appear in watched directories
+- **Manual Transfers**: Create and monitor one-time transfers through the web UI
+- **Multiple Storage Types**: Connect S3 buckets, SMB/CIFS shares, SFTP servers, and local directories
+- **Progress Monitoring**: Track transfer status and completion in real-time
+- **Concurrent Transfer Limits**: Control how many jobs run simultaneously per endpoint (job-level throttling)
+- **Transfer History**: Search and filter all past transfers with retry capabilities
+- **Path Templates**: Use dynamic variables like {year}, {month}, {filename} in destination paths
 
-File Orbit provides a web-based orchestration layer on top of rclone to address enterprise requirements like event-driven transfers, scheduling, monitoring, and throttling. Built specifically for:
+## Coming Soon
 
-- **Cloud-to-On-Premise** transfers (S3 → SMB shares)
-- **Machine-to-Machine** transfers (SFTP → SFTP)
-- **Event-driven workflows** (S3 events trigger transfers)
-- **Scheduled transfers** with cron expressions
+These features are implemented but need final integration:
+- **Scheduled Transfers**: Cron-based scheduling (code complete, not auto-enabled)
+- **S3 Event Triggers**: Respond to S3 bucket events via SQS (requires AWS setup)
+- **Bandwidth Throttling**: Per-endpoint bandwidth limits (UI ready, needs backend integration)
+- **Email Notifications**: Transfer completion alerts (structure in place)
+- **File-Level Throttling**: Current throttling works at job level; file-level throttling planned
 
-## Architecture
+## Important Limitations
 
-The system consists of:
-- **Frontend**: React TypeScript application
-- **Backend**: FastAPI Python REST API
-- **Database**: PostgreSQL for persistent storage
-- **Queue**: Redis for job management
-- **Workers**: Python services for job processing
-- **File Transfer**: Rclone CLI (not RC API)
+### Concurrent Transfer Throttling
+Currently, throttling works at the **job level**, not the file level. This means:
+- If an endpoint has a 5 concurrent transfer limit, it limits to 5 concurrent **jobs**
+- Each job may contain multiple files that transfer sequentially
+- A job with 100 files counts as 1 concurrent transfer, not 100
+- The throttle check happens when the job starts but slots are not properly acquired/released
 
-## Key Features
+**Example**: With a 5 concurrent transfer limit on an endpoint:
+- 5 jobs with 10 files each = 5 concurrent jobs (50 files transferring in 5 parallel streams)
+- The system won't limit individual files within those jobs
 
-### Working Now
-- ✅ **Manual Transfers** - Create and monitor file transfers via web UI
-- ✅ **Event-Driven Transfers** - Automatic transfers when files appear (local directories)
-- ✅ **Endpoint Management** - Configure storage locations with throttling
-- ✅ **Transfer Templates** - Define automated transfer workflows
-- ✅ **Transfer History** - Track all transfers with filtering and search
-- ✅ **Real-time Monitoring** - Live progress updates and statistics
-- ✅ **Safe File Writing** - Uses temporary files during transfer to prevent partial file reads
-- ✅ **Checksum Verification** - Supports file integrity checks after transfer completion
+We plan to implement proper file-level throttling in a future release.
 
-### Partially Working
-- 🟡 **Scheduled Transfers** - Can create schedules but automatic execution not enabled
-- 🟡 **S3 Integration** - UI and code ready, needs AWS credentials
-
-### Not Yet Implemented
-- ❌ **Authentication** - No login system
-- ❌ **Cloud Storage** - S3/SMB/SFTP endpoints need configuration
 
 ## 📸 Screenshots
 
@@ -122,18 +116,56 @@ file-orbit/
 └── logs/           # Service logs (created at runtime)
 ```
 
-## Next Steps
+## System Requirements
 
-1. **Enable S3 Integration**: Add AWS credentials for cloud transfers
-2. **Configure SMB/SFTP**: Add real network endpoint credentials
-3. **Enable Scheduler**: Uncomment scheduler in `manage.sh` for automatic scheduled transfers
-4. **Add Authentication**: Implement login system for production use
+- Python 3.8+
+- Node.js 14+
+- Docker and Docker Compose
+- rclone (installed automatically via Docker)
+- 4GB RAM minimum
+- 10GB disk space for logs and temporary files
 
-## Contributing
+## Configuration
 
-This is a production-ready implementation. For deployment, consider:
-- Adding comprehensive error handling
-- Implementing authentication and authorization
-- Setting up monitoring and alerting
-- Configuring log aggregation
-- Adding integration tests
+### Storage Endpoints
+
+Configure your storage endpoints through the web interface:
+
+1. **S3**: Requires AWS access key, secret key, and region
+2. **SMB/CIFS**: Requires host, share name, username, password, and optional domain
+3. **SFTP**: Supports password or SSH key authentication
+4. **Local**: Specify directory paths on the server
+
+### Environment Variables
+
+Key configuration options in `backend/.env`:
+```bash
+# Database connection
+DATABASE_URL=postgresql://user:pass@localhost:5433/fileorbit
+
+# AWS credentials for S3
+AWS_ACCESS_KEY_ID=your-key
+AWS_SECRET_ACCESS_KEY=your-secret
+AWS_DEFAULT_REGION=us-east-1
+
+# Email notifications (optional)
+SMTP_HOST=smtp.yourdomain.com
+SMTP_PORT=587
+```
+
+## Deployment
+
+For production deployment:
+
+1. **Security**: Enable authentication and use HTTPS
+2. **Monitoring**: Configure Prometheus metrics and alerts
+3. **High Availability**: Deploy multiple workers behind a load balancer
+4. **Logging**: Use centralized logging (ELK stack or similar)
+
+See [Architecture Documentation](docs/ARCHITECTURE.md) for detailed deployment guidance.
+
+## Support
+
+- **Documentation**: Check the [docs/](docs/) directory for detailed guides
+- **Issues**: Report bugs or request features via GitHub issues
+- **Implementation Status**: See [IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md) for current capabilities

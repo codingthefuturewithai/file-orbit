@@ -1,6 +1,6 @@
 # MVP Implementation Status
 
-Last Updated: June 30, 2025
+Last Updated: July 2, 2025
 
 ## 🟢 What's Implemented (Fully Functional!)
 
@@ -29,6 +29,7 @@ Last Updated: June 30, 2025
 - ✅ **Event Monitor** - Watches file system for changes
 - ✅ **File Transfer** - Executes rclone commands
 - ✅ **Progress Tracking** - Real-time transfer updates
+- ⚠️  **Throttle Controller** - Job-level throttling only (not file-level), missing slot acquisition
 - 🟡 **Scheduler Service** - Complete but not auto-running
 
 ### Frontend Application
@@ -57,15 +58,30 @@ Last Updated: June 30, 2025
 ### Cloud Storage
 - ✅ UI supports S3, SMB, SFTP configuration
 - ✅ Backend models support all types
-- ✅ **S3 transfers fully working** (with valid AWS credentials)
+- ✅ **S3 transfers fully working** (tested and operational with AWS credentials)
 - ✅ **SMB/SFTP implementations COMPLETE** (July 1, 2025)
   - Full SMB/CIFS support with domain authentication
   - SFTP with password and SSH key authentication
   - Path handling for shares and remote directories
-  - Configuration validated with rclone
-- **S3 Ready**: AWS credentials already in backend/.env
-- **SMB Ready**: User has local MacBook share configured (10.0.0.126/smb-test-mount)
-- **SFTP Ready**: Implementation complete, needs real server for testing
+  - Configuration validated with unit tests
+  - Integration tests passed with rclone
+- **S3 Ready**: AWS credentials configured and tested
+- **SMB Ready**: Backend fully implemented, awaiting real endpoint testing
+- **SFTP Ready**: Backend fully implemented with SSH key support
+
+## ⚠️ Known Limitations
+
+### Throttling Implementation
+- **Current**: Throttling works at job level, not file level
+- **Issue**: Throttle slots are checked but not acquired/released (race condition possible)
+- **Impact**: A job with 100 files counts as 1 concurrent transfer
+- **Example**: 5 concurrent limit = 5 jobs running (each with multiple files)
+- **Fix Required**: Implement proper slot acquisition in worker.py
+
+### Log Path Configuration  
+- Logs are hardcoded to project directory
+- Won't work in production deployments
+- Needs environment variable configuration
 
 ## 🔴 Not Implemented
 

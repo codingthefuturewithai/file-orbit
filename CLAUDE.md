@@ -636,7 +636,35 @@ To continue where we left off:
 3. Access UI: http://localhost:3000 (or next available port)
 4. Current branch: main (all features merged)
 
-### Recent Updates (July 1, 2025 - SMB/SFTP Implementation Complete)
+### Recent Updates (July 2, 2025 - Throttling Analysis & Documentation Update)
+
+### Critical Discovery: Throttling Implementation Limitations
+**Analysis Date**: July 2, 2025
+
+**Current Implementation**:
+- Throttling is implemented at the **JOB level**, not file level
+- The `throttle_controller.py` has proper acquire/release slot methods but they're NEVER called
+- Worker only does a check via `can_start_transfer()` but doesn't acquire slots
+- This creates a race condition - multiple workers could pass the check simultaneously
+
+**How It Actually Works**:
+1. When a job starts, it checks if slots are available (but doesn't reserve them)
+2. If check passes, the job transfers ALL its files sequentially
+3. If check fails, entire job is requeued for 60 seconds
+4. No per-file throttling or slot management
+
+**Example Impact**:
+- Endpoint with 5 concurrent transfer limit
+- 5 jobs with 10 files each
+- System allows 5 concurrent jobs (not 5 concurrent files)
+- Total: 50 files transferring in 5 parallel streams
+
+**Required Fix**: 
+- Implement proper slot acquisition/release in worker
+- Add try/finally blocks to ensure slots are released
+- Consider file-level vs job-level throttling architecture
+
+## Recent Updates (July 1, 2025 - SMB/SFTP Implementation Complete)
 
 ### SMB/SFTP Implementation ✅ COMPLETE
 1. **Backend Implementation**:

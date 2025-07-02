@@ -14,14 +14,17 @@
 - **Bandwidth configuration** - Support for human-readable formats (10M, 1G, etc.)
 - **Transfer editing** - Modify and retry existing transfers without creating new ones
 
+### ✅ Recently Implemented (July 2025)
+- **SMB/CIFS transfers** - ✅ FULLY IMPLEMENTED (untested with real endpoints)
+- **SFTP transfers** - ✅ FULLY IMPLEMENTED with password and SSH key support (untested with real endpoints)
+- **Log Viewer UI** - ✅ FULLY IMPLEMENTED - View all service logs in web interface
+- **Path Template Variables** - ✅ WORKING - Dynamic paths with {year}, {month}, {day}, {filename}, {timestamp}
+
 ### ❌ Not Working (Required for Production)
-- **SMB/CIFS transfers** - UI exists but rclone config NOT IMPLEMENTED (3 hours to implement)
-- **SFTP transfers** - UI exists but rclone config NOT IMPLEMENTED (3 hours to implement)
 - **S3 event monitoring** - SQS integration not configured
-- **Cross-machine transfers** - Only local and S3→local work
-- **Network error handling** - No retry logic
+- **Network error handling** - No retry logic  
 - **Credential security** - Stored in plain text
-- **Log Viewer UI** - Backend implemented, frontend not yet (2 hours to implement)
+- **Scheduled execution** - Scheduler service exists but not auto-started
 - **DISTRIBUTED ARCHITECTURE** - Cannot control transfers between remote servers
   - Current: UI on Server A can only transfer files on Server A
   - Required: UI on Server A controls transfers from Server B to Server C
@@ -43,13 +46,13 @@
 - **Create** new endpoints with configuration
 - **Edit** existing endpoint settings
 - **Delete** endpoints (with cascade handling)
-- **Configure throttling** per endpoint (concurrent transfer limits)
+- **Configure throttling** per endpoint (concurrent JOB limits - not file-level)
 - **Test connection** before saving
 - Supported types:
-  - Local file system
-  - S3 (bucket configuration ready, needs AWS credentials)
-  - SMB/CIFS (configuration ready, needs network access)
-  - SFTP (configuration ready, needs SSH access)
+  - Local file system ✅ WORKING
+  - S3 ✅ WORKING (needs AWS credentials for your buckets)
+  - SMB/CIFS ✅ IMPLEMENTED (needs network endpoint credentials)
+  - SFTP ✅ IMPLEMENTED (supports password and SSH key authentication)
 
 #### 3. Transfer Templates Management
 - Create templates for automated transfers
