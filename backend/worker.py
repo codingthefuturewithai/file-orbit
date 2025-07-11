@@ -257,7 +257,7 @@ class JobProcessor:
             config.update({
                 'host': endpoint.config.get('host'),
                 'user': endpoint.config.get('user'),
-                'pass': endpoint.config.get('password'),
+                'password': endpoint.config.get('password'),
                 'domain': endpoint.config.get('domain', 'WORKGROUP')
             })
         elif endpoint.type.value == 'sftp':

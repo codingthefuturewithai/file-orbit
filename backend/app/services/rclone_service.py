@@ -4,6 +4,7 @@ import subprocess
 import json
 import tempfile
 import os
+import base64
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 from pathlib import Path
@@ -48,6 +49,7 @@ class RcloneService:
     
     async def configure_remote(self, name: str, config: Dict[str, Any]):
         """Configure a remote for use with rclone"""
+        logger.info(f"configure_remote called for {name} with config: {config}")
         # Store config for later use
         self.remotes_config[name] = config
         
@@ -63,7 +65,9 @@ class RcloneService:
         
         # Build config content
         config_content = ""
+        logger.info(f"Updating config file with {len(self.remotes_config)} remotes: {list(self.remotes_config.keys())}")
         for name, config in self.remotes_config.items():
+            logger.info(f"Processing remote {name} with type {config.get('type')}")
             if config['type'] == 'local':
                 # Local doesn't need a section in config
                 continue
@@ -80,7 +84,32 @@ class RcloneService:
             elif config['type'] == 'smb':
                 config_content += f"host = {config.get('host', '')}\n"
                 config_content += f"user = {config.get('user', '')}\n"
-                config_content += f"pass = {config.get('pass', '')}\n"
+                # Obscure password using rclone's method as the documentation requires
+                password = config.get('password', config.get('pass', ''))
+                logger.info(f"Processing SMB password for endpoint {config.get('name')}: {password[:3]}...{password[-3:]} (length: {len(password)})")
+                if password:
+                    # Use rclone obscure command to properly encode the password
+                    try:
+                        obscure_process = await asyncio.create_subprocess_exec(
+                            "rclone", "obscure", password,
+                            stdout=asyncio.subprocess.PIPE,
+                            stderr=asyncio.subprocess.PIPE
+                        )
+                        stdout, stderr = await obscure_process.communicate()
+                        if obscure_process.returncode == 0:
+                            obscured_password = stdout.decode().strip()
+                            logger.info(f"Raw password input: '{password}'")
+                            logger.info(f"Full obscured output: '{obscured_password}'")
+                            logger.info(f"Successfully obscured password: {obscured_password[:10]}...")
+                            config_content += f"pass = {obscured_password}\n"
+                        else:
+                            logger.error(f"Failed to obscure password: {stderr.decode()}")
+                            config_content += f"pass = {password}\n"  # Fallback to plain text
+                    except Exception as e:
+                        logger.error(f"Error running rclone obscure: {e}")
+                        config_content += f"pass = {password}\n"  # Fallback to plain text
+                else:
+                    config_content += f"pass = \n"
                 config_content += f"domain = {config.get('domain', 'WORKGROUP')}\n"
                 # Add share if specified (though typically share is in the path)
                 if config.get('share'):

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # CTF Rclone MVP Management Script
-# Usage: ./manage.sh [start|stop|restart|status|logs] [service]
+# Usage: ./manage.sh [start|stop|restart|status|logs] [all|service]
 
 # Colors for output
 RED='\033[0;31m'
@@ -236,92 +236,97 @@ view_logs() {
 }
 
 # Main command handling
-case "$1" in
+CMD=$1
+SERVICE=$2
+
+# Function to display usage information
+usage() {
+    echo "Usage: $0 [start|stop|restart|status|logs] [all|service]"
+    echo "Services: backend, frontend, worker, event-monitor, scheduler, docker"
+    exit 1
+}
+
+# Require a command
+if [ -z "$CMD" ]; then
+    usage
+fi
+
+# Commands that require a service argument
+case "$CMD" in
+    start|stop|restart|status|logs)
+        if [ -z "$SERVICE" ]; then
+            echo -e "${RED}Error: Missing argument. Please specify 'all' or a service name.${NC}"
+            usage
+        fi
+        ;;
+esac
+
+case "$CMD" in
     start)
-        if [ -z "$2" ]; then
-            start_all_services
-        else
-            case "$2" in
-                docker) start_docker ;;
-                backend) check_venv; start_service "backend" "cd '$BACKEND_DIR' && source venv/bin/activate && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000" ;;
-                frontend) start_service "frontend" "cd '$FRONTEND_DIR' && BROWSER=none npm start" ;;
-                worker) check_venv; start_service "worker" "cd '$BACKEND_DIR' && source venv/bin/activate && python worker.py" ;;
-                event-monitor) check_venv; start_service "event-monitor" "cd '$BACKEND_DIR' && source venv/bin/activate && python event_monitor_service.py" ;;
-                scheduler) check_venv; start_service "scheduler" "cd '$BACKEND_DIR' && source venv/bin/activate && python scheduler_service.py" ;;
-                *) echo -e "${RED}Unknown service: $2${NC}"; exit 1 ;;
-            esac
-        fi
+        case "$SERVICE" in
+            all) start_all_services ;;
+            docker) start_docker ;;
+            backend) check_venv; start_service "backend" "cd '$BACKEND_DIR' && source venv/bin/activate && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000" ;;
+            frontend) start_service "frontend" "cd '$FRONTEND_DIR' && BROWSER=none npm start" ;;
+            worker) check_venv; start_service "worker" "cd '$BACKEND_DIR' && source venv/bin/activate && python worker.py" ;;
+            event-monitor) check_venv; start_service "event-monitor" "cd '$BACKEND_DIR' && source venv/bin/activate && python event_monitor_service.py" ;;
+            scheduler) check_venv; start_service "scheduler" "cd '$BACKEND_DIR' && source venv/bin/activate && python scheduler_service.py" ;;
+            *) echo -e "${RED}Unknown service: $SERVICE${NC}"; usage ;;
+        esac
         ;;
-    
     stop)
-        if [ -z "$2" ]; then
-            stop_all_services
-        else
-            case "$2" in
-                docker) stop_docker ;;
-                backend|frontend|worker|event-monitor|scheduler) stop_service "$2" ;;
-                *) echo -e "${RED}Unknown service: $2${NC}"; exit 1 ;;
-            esac
-        fi
+        case "$SERVICE" in
+            all) stop_all_services ;;
+            docker) stop_docker ;;
+            backend) stop_service "backend" ;;
+            frontend) stop_service "frontend" ;;
+            worker) stop_service "worker" ;;
+            event-monitor) stop_service "event-monitor" ;;
+            scheduler) stop_service "scheduler" ;;
+            *) echo -e "${RED}Unknown service: $SERVICE${NC}"; usage ;;
+        esac
         ;;
-    
     restart)
-        if [ -z "$2" ]; then
-            stop_all_services
-            echo -e "${YELLOW}Restarting all services...${NC}"
-            sleep 2
-            start_all_services
-        else
-            stop_service "$2"
-            echo -e "${YELLOW}Restarting $2...${NC}"
-            sleep 2
-            $0 start "$2"
-        fi
+        case "$SERVICE" in
+            all)
+                stop_all_services
+                echo "---"
+                start_all_services
+                ;;
+            *)
+                stop_service "$SERVICE"
+                sleep 1
+                start_service "$SERVICE" # Simplified for individual services
+                ;;
+        esac
         ;;
-    
     status)
-        echo -e "${YELLOW}=== CTF Rclone MVP Status ===${NC}"
-        check_docker_status
-        check_status "backend"
-        check_status "frontend"
-        check_status "worker"
-        check_status "event-monitor"
-        check_status "scheduler"
-        ;;
-    
-    logs)
-        if [ -z "$2" ]; then
-            echo -e "${RED}Please specify a service to view logs${NC}"
-            echo "Available services: backend, frontend, worker, event-monitor, scheduler"
+        echo "=== CTF Rclone MVP Status ==="
+        if [ "$SERVICE" = "all" ]; then
+            check_docker_status
+            check_status "backend"
+            check_status "frontend"
+            check_status "worker"
+            check_status "event-monitor"
+            check_status "scheduler"
         else
-            view_logs "$2"
+            if [ "$SERVICE" = "docker" ]; then
+                check_docker_status
+            else
+                check_status "$SERVICE"
+            fi
         fi
         ;;
-    
+    logs)
+        if [ "$SERVICE" = "all" ]; then
+            echo -e "${RED}Cannot view logs for 'all' services at once. Please specify a single service.${NC}"
+            usage
+        else
+            view_logs "$SERVICE"
+        fi
+        ;;
     *)
-        echo "CTF Rclone MVP Management Script"
-        echo "Usage: $0 [start|stop|restart|status|logs] [service]"
-        echo ""
-        echo "Commands:"
-        echo "  start [service]    - Start all services or a specific service"
-        echo "  stop [service]     - Stop all services or a specific service"
-        echo "  restart [service]  - Restart all services or a specific service"
-        echo "  status            - Show status of all services"
-        echo "  logs <service>    - View logs for a specific service"
-        echo ""
-        echo "Services:"
-        echo "  docker       - Docker containers (PostgreSQL, Redis, Rclone)"
-        echo "  backend      - FastAPI backend API"
-        echo "  frontend     - React web interface"
-        echo "  worker       - Job processor"
-        echo "  event-monitor - File system event monitor"
-        echo "  scheduler    - Cron job scheduler"
-        echo ""
-        echo "Examples:"
-        echo "  $0 start           # Start all services"
-        echo "  $0 stop backend    # Stop only the backend"
-        echo "  $0 restart worker  # Restart the worker"
-        echo "  $0 status          # Check all services"
-        echo "  $0 logs worker     # View worker logs"
+        echo -e "${RED}Unknown command: $CMD${NC}"
+        usage
         ;;
 esac

@@ -46,7 +46,7 @@ cd ..
 # - Start backend API, frontend UI, and worker services
 
 # 9. Verify everything is running
-./manage.sh status
+./manage.sh status all
 ```
 
 ### Access the Application
@@ -202,9 +202,12 @@ To make the MVP functional, we need to implement:
 
 ### Docker Issues
 ```bash
-# Reset everything
-docker-compose down -v
-docker-compose up -d
+# Stop and remove all containers, networks, and volumes
+./manage.sh stop all
+docker-compose down -v # Use this for a full reset
+
+# Restart all services
+./manage.sh start all
 ```
 
 ### Backend Won't Start
@@ -264,7 +267,7 @@ The worker service automatically handles `.partial` files:
    - Username: `ctf_rclone`
    - Password: `ctf_rclone_password`
    - Database: `ctf_rclone`
-4. **Testing transfers**: Use `manage.sh` to start all services easily
+4. **Testing transfers**: Use `./manage.sh start all` to start all services easily
 
 ## Summary
 
