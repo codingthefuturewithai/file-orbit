@@ -301,7 +301,7 @@ class JobProcessor:
             
             # For destination, apply template substitution if the path contains template variables
             dest_base_path = job.destination_path
-            if any(var in dest_base_path for var in ['{year}', '{month}', '{day}', '{filename}', '{timestamp}']):
+            if any(var in dest_base_path for var in ['{year}', '{month}', '{day}', '{filename}', '{original_filename}', '{timestamp}']):
                 # Apply template substitution
                 substituted_path = self._apply_path_template(dest_base_path, transfer.file_name)
                 # Extract the directory path (remove the filename if it's at the end)
@@ -382,6 +382,7 @@ class JobProcessor:
         
         replacements = {
             '{filename}': filename,
+            '{original_filename}': filename,  # Alias for {filename}
             '{name}': name_without_ext,
             '{ext}': ext,
             '{year}': str(now.year),

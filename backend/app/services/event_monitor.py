@@ -205,6 +205,7 @@ class EventMonitor(ABC):
         
         replacements = {
             '{filename}': filename,
+            '{original_filename}': filename,  # Alias for {filename}
             '{name}': name_without_ext,
             '{ext}': ext,
             '{year}': str(now.year),
