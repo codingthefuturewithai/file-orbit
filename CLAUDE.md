@@ -743,3 +743,67 @@ To continue where we left off:
 - Changed paths to /tmp/file-orbit/ (safe for any system)
 - Disabled S3/SMB endpoints by default
 - Added helpful print messages after seeding
+
+## Mantine UI Migration (July 15, 2025)
+
+### Current Status
+- **Branch**: feature/mantine-migration
+- **Frontend Directory**: frontend-mantine (new Vite + React + TypeScript project)
+- **Dev Server**: Running on http://localhost:3000 (may use 3001 if 3000 is occupied)
+
+### Phase 0 ✅ COMPLETE
+- Created frontend-mantine with Vite + React + TypeScript
+- Installed all Mantine dependencies (@mantine/core, hooks, form, dates, notifications, modals, dropzone)
+- Copied API client and types from existing frontend
+- Fixed environment variables (REACT_APP_ → VITE_)
+- Basic app structure working
+
+### Phase 1 ✅ COMPLETE  
+- **AppShell Layout**: Responsive navigation sidebar with all menu items
+- **Dashboard Page**: Shows system statistics (Total Jobs, Active Jobs, etc.)
+- **Endpoints CRUD**: Full functionality with:
+  - Data table listing all endpoints
+  - Create modal with dynamic form fields based on endpoint type
+  - Edit existing endpoints
+  - Delete with confirmation modal
+  - Support for Local, S3, SMB, and SFTP types
+- **Error Handling**: Global notifications and loading states
+- **Utilities**: formatBytes and bandwidth parsing/formatting
+
+### Key Files Created
+- src/components/Layout/AppShell.tsx - Main layout wrapper
+- src/components/Layout/Navigation.tsx - Sidebar navigation
+- src/pages/Dashboard.tsx - Dashboard with stats
+- src/pages/Endpoints/index.tsx - Endpoints CRUD page
+- src/components/EndpointModal.tsx - Dynamic endpoint form modal
+- src/hooks/useApi.ts - Custom hook for API calls with error handling
+- src/utils/format.ts - Byte and bandwidth formatting utilities
+
+### Important Fixes Applied
+- Fixed TypeScript import errors by using `import type { Endpoint } from '../types/index'`
+- Removed ErrorBoundary temporarily due to render issues
+- Fixed blank page issue by ensuring all imports were correct
+- Added favicon.ico to prevent 404 errors
+
+### Migration Plan Files
+- FILEORBIT_MANTINE_MIGRATION_PLAN.md - Complete migration strategy
+- PHASE_0_CHECKLIST.md - Quick start checklist
+(These files were restored from feature/frontend-redesign branch)
+
+### Session Resume Instructions for Mantine Migration
+1. Navigate to project: `cd /Users/timkitchens/projects/consumer-apps/file-orbit`
+2. Switch to migration branch: `git checkout feature/mantine-migration`
+3. Start backend: `./manage.sh start backend`
+4. Start Mantine frontend: `cd frontend-mantine && npm run dev`
+5. Access at http://localhost:3000 (or check terminal for actual port)
+
+### Next Steps (Phase 2)
+- Transfer list with real-time monitoring
+- Multi-step transfer creation form
+- Transfer history with filtering
+- All remaining pages (Templates, Logs, Settings)
+
+### Known Issues
+- TypeScript error in console about Endpoint export (cosmetic, doesn't affect functionality)
+- Dev server may use port 3001 if 3000 is occupied
+- Must ensure backend is running before starting frontend
