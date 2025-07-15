@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Modal, Stepper, Button, Group, TextInput, Select, Checkbox, Stack, Text, Radio, NumberInput } from '@mantine/core';
+import { Modal, Stepper, Button, Group, TextInput, Select, Checkbox, Stack, Radio } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
@@ -79,6 +79,12 @@ export default function CreateTransferForm({ opened, onClose }: CreateTransferFo
       fetchTemplates();
     }
   }, [opened]);
+
+  useEffect(() => {
+    if (form.values.type === 'template' && form.values.template_id) {
+      loadTemplate(form.values.template_id);
+    }
+  }, [form.values.template_id]);
 
   const fetchEndpoints = async () => {
     try {
@@ -201,11 +207,11 @@ export default function CreateTransferForm({ opened, onClose }: CreateTransferFo
       opened={opened} 
       onClose={onClose} 
       title="Create Transfer" 
-      size="lg"
+      size="xl"
     >
       <Stepper active={getActiveStep()} onStepClick={setActive}>
         {/* Step 1: Basic Info */}
-        <Stepper.Step label="Basic Info" description="Transfer details">
+        <Stepper.Step label="Basic Info">
           <Stack mt="md">
             <TextInput
               label="Transfer Name"
@@ -231,17 +237,13 @@ export default function CreateTransferForm({ opened, onClose }: CreateTransferFo
                 placeholder="Choose a template"
                 data={templates.map(t => ({ value: t.id, label: t.name }))}
                 {...form.getInputProps('template_id')}
-                onChange={(value) => {
-                  form.setFieldValue('template_id', value);
-                  if (value) loadTemplate(value);
-                }}
               />
             )}
           </Stack>
         </Stepper.Step>
 
         {/* Step 2: Source Configuration */}
-        <Stepper.Step label="Source" description="Configure source">
+        <Stepper.Step label="Source">
           <Stack mt="md">
             <Select
               label="Source Endpoint"
@@ -265,7 +267,7 @@ export default function CreateTransferForm({ opened, onClose }: CreateTransferFo
         </Stepper.Step>
 
         {/* Step 3: Destination Configuration */}
-        <Stepper.Step label="Destination" description="Configure destination">
+        <Stepper.Step label="Destination">
           <Stack mt="md">
             <Select
               label="Destination Endpoint"
@@ -289,7 +291,7 @@ export default function CreateTransferForm({ opened, onClose }: CreateTransferFo
         </Stepper.Step>
 
         {/* Step 4: Transfer Options */}
-        <Stepper.Step label="Options" description="Additional options">
+        <Stepper.Step label="Options">
           <Stack mt="md">
             <TextInput
               label="File Pattern"
@@ -307,7 +309,7 @@ export default function CreateTransferForm({ opened, onClose }: CreateTransferFo
 
         {/* Step 5: Schedule (only for scheduled transfers) */}
         {shouldShowStep(4) && (
-          <Stepper.Step label="Schedule" description="Set schedule">
+          <Stepper.Step label="Schedule">
             <Stack mt="md">
               <Radio.Group
                 label="Schedule Type"
