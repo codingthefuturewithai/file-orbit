@@ -818,12 +818,30 @@ To continue where we left off:
 4. Start Mantine frontend: `cd frontend-mantine && npm run dev`
 5. Access at http://localhost:3001 (port may vary if 3000 is in use)
 
-### Next Steps (Phase 3)
-- Templates page - Transfer template CRUD
-- Logs page - System logs viewer
-- Settings page - Application configuration
+### Phase 3 ✅ COMPLETE (July 15, 2025)
+- **Templates Page**: Full CRUD for transfer templates with event types and chain rules
+- **Logs Page**: Real-time log viewer with correct backend integration (no mock data)
+- **Settings Page**: 4-tab configuration interface (pending backend implementation)
+- **Bug Fixes**: 
+  - Fixed Logs API to use correct endpoints (backend/worker/event-monitor/scheduler)
+  - Fixed .gitignore to not block Logs component directory
 
-### Known Issues
-- TypeScript error in console about Endpoint export (cosmetic, doesn't affect functionality)
-- Dev server may use port 3001 if 3000 is occupied
-- Must ensure backend is running before starting frontend
+### Known Issues & Jira Tickets Created
+1. **CP-1 (Bug)**: Template selection validation prevents form progression
+2. **CP-3 (Critical)**: Replace legacy frontend with Mantine frontend - DO THIS FIRST
+3. **CP-4**: Implement Settings persistence API
+4. **CP-5**: Test and validate transfer execution
+5. **CP-6**: Implement transfer template chain rules functionality
+6. **CP-7**: Add comprehensive error handling
+7. **CP-8**: Implement dark theme consistency
+
+See `frontend-mantine/KNOWN_ISSUES.md` for detailed descriptions.
+
+### Session Resume Instructions (After Merge to Main)
+1. Navigate to project: `cd /Users/timkitchens/projects/consumer-apps/file-orbit`
+2. Pull latest: `git checkout main && git pull`
+3. Start backend: `./manage.sh start backend`
+4. Start frontend: `cd frontend-mantine && npm run dev`
+5. Access at http://localhost:3001 (port may vary if 3000 is in use)
+
+Note: After CP-3 is complete, the frontend will be in the `frontend` directory instead of `frontend-mantine`.
