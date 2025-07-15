@@ -9,19 +9,21 @@ import '@mantine/notifications/styles.css'
 import '@mantine/dates/styles.css'
 import '@mantine/dropzone/styles.css'
 import App from './App'
-import ErrorBoundary from './components/common/ErrorBoundary'
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <BrowserRouter>
-      <MantineProvider defaultColorScheme="light">
-        <Notifications />
-        <ModalsProvider>
-          <ErrorBoundary>
+const root = document.getElementById('root');
+if (!root) {
+  console.error('Root element not found!');
+} else {
+  createRoot(root).render(
+    <StrictMode>
+      <BrowserRouter>
+        <MantineProvider defaultColorScheme="light">
+          <Notifications />
+          <ModalsProvider>
             <App />
-          </ErrorBoundary>
-        </ModalsProvider>
-      </MantineProvider>
-    </BrowserRouter>
-  </StrictMode>,
-)
+          </ModalsProvider>
+        </MantineProvider>
+      </BrowserRouter>
+    </StrictMode>,
+  );
+}
