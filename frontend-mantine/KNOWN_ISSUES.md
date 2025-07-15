@@ -4,14 +4,16 @@ This document tracks known issues and missing features in the Mantine frontend m
 
 ## 🐛 Bugs
 
-### 1. Template Selection Error in Create Transfer Form
+### 1. Template Selection Validation Bug in Create Transfer Form
 **Location**: Create Transfer modal > Basic Info step  
-**Issue**: When selecting "From Template - Use existing template", attempting to select a template shows error:
-```
-Uncaught (in promise) Error: Unlisted TLDs in URLs are not supported.
-```
+**Issue**: When selecting "From Template - Use existing template" and choosing a template from the dropdown:
+- The template appears selected in the dropdown
+- But the form validation shows "Please select a template" error
+- The Next button remains disabled/won't proceed
+- No console errors - this is a form validation issue
 **Impact**: Cannot create transfers from templates  
-**Status**: Not fixed
+**Status**: Not fixed  
+**Note**: Manual and Scheduled transfer types work correctly
 
 ## 🚧 Not Yet Implemented Features
 
@@ -37,6 +39,16 @@ Uncaught (in promise) Error: Unlisted TLDs in URLs are not supported.
 - Log auto-refresh requires backend services to be generating logs
 - Event-triggered transfers require event monitoring services
 
+### 4. Transfer Functionality Not Fully Tested
+**Location**: Transfers page, Create Transfer form  
+**Issue**: Since the Mantine UI redesign, actual transfer creation and execution hasn't been tested
+**Unknown Status**:
+- Whether manual transfers execute properly
+- Whether scheduled transfers work
+- Whether the job execution flow works end-to-end
+- Whether progress monitoring updates correctly
+**Next Step**: Need to test creating and running actual transfers with the new UI
+
 ## 📝 Minor UI/UX Issues
 
 ### 1. Dark Theme Consistency
@@ -58,6 +70,20 @@ Uncaught (in promise) Error: Unlisted TLDs in URLs are not supported.
 **Issue**: The frontend-mantine/.gitignore has "logs" on line 2, which prevents the Logs page component from being tracked by git
 **Workaround**: Use `git add -f` to force add files in the Logs directory
 **Fix**: Should be "logs/" instead of "logs" to only ignore the logs directory, not all files/folders containing "logs"
+
+### 2. Frontend Directory Migration Needed
+**Location**: Project root  
+**Issue**: Need to replace the old React frontend with the new Mantine frontend
+**Tasks**:
+- Remove the current `frontend` directory
+- Rename `frontend-mantine` to `frontend`
+- Update all references in:
+  - manage.sh script
+  - Documentation files (README.md, CLAUDE.md, etc.)
+  - Docker configurations if any
+  - GitHub Actions if any
+**Impact**: Two frontends exist side-by-side causing confusion
+**Status**: Not started
 
 ## 🎯 Next Steps
 
