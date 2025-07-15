@@ -744,12 +744,12 @@ To continue where we left off:
 - Disabled S3/SMB endpoints by default
 - Added helpful print messages after seeding
 
-## Mantine UI Migration (July 15, 2025)
+## Mantine UI Migration (July 15, 2025) ✅ MERGED TO MAIN
 
 ### Current Status
-- **Branch**: feature/mantine-migration
-- **Frontend Directory**: frontend-mantine (new Vite + React + TypeScript project)
-- **Dev Server**: Running on http://localhost:3000 (may use 3001 if 3000 is occupied)
+- **Branch**: Merged to main (commit: b0dfa7e)
+- **Frontend Directory**: frontend (replaced legacy React frontend)
+- **Dev Server**: Running on http://localhost:3000 with Vite
 
 ### Phase 0 ✅ COMPLETE
 - Created frontend-mantine with Vite + React + TypeScript
