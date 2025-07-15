@@ -770,20 +770,41 @@ To continue where we left off:
 - **Error Handling**: Global notifications and loading states
 - **Utilities**: formatBytes and bandwidth parsing/formatting
 
-### Key Files Created
-- src/components/Layout/AppShell.tsx - Main layout wrapper
-- src/components/Layout/Navigation.tsx - Sidebar navigation
-- src/pages/Dashboard.tsx - Dashboard with stats
-- src/pages/Endpoints/index.tsx - Endpoints CRUD page
-- src/components/EndpointModal.tsx - Dynamic endpoint form modal
-- src/hooks/useApi.ts - Custom hook for API calls with error handling
-- src/utils/format.ts - Byte and bandwidth formatting utilities
+### Phase 2 ✅ COMPLETE (July 15, 2025)
+- **Transfer List with Real-time Monitoring**: 
+  - Active transfers page showing running/queued/pending transfers
+  - 5-second polling for real-time updates
+  - Progress bars with transfer rate and ETA
+  - Action buttons (pause, resume, retry, cancel)
+- **Multi-step Transfer Creation Form**:
+  - 5-step wizard using Mantine Stepper
+  - Support for manual, scheduled, and template-based transfers
+  - Dynamic form that adjusts based on transfer type
+  - Path template variables support
+- **Transfer History with Filtering**:
+  - Complete transfer history with all statuses
+  - Filtering by status, type, search term, and date range
+  - Pagination (10, 25, 50, 100 items per page)
+  - Local timezone display for all dates
+- **Modals**:
+  - JobDetailsModal - Shows comprehensive job info and file transfers
+  - EditJobModal - Edit transfer paths with execute option
+- **API Integration**: Fixed useApi hook to properly call backend endpoints
 
-### Important Fixes Applied
-- Fixed TypeScript import errors by using `import type { Endpoint } from '../types/index'`
-- Removed ErrorBoundary temporarily due to render issues
-- Fixed blank page issue by ensuring all imports were correct
-- Added favicon.ico to prevent 404 errors
+### Key Files Created (Phase 2)
+- src/pages/Transfers/TransferList.tsx - Active transfers with real-time updates
+- src/pages/Transfers/index.tsx - Main transfers page
+- src/components/CreateTransferForm.tsx - Multi-step transfer creation
+- src/pages/History/index.tsx - Transfer history with filtering
+- src/components/JobDetailsModal.tsx - Detailed job information modal
+- src/components/EditJobModal.tsx - Edit transfer configuration
+- src/hooks/useApi.ts - Updated with proper API base URL and error handling
+
+### Important Fixes Applied (Phase 2)
+- Fixed App.tsx routing to actually use the new components
+- Corrected API endpoint paths with /api/v1 prefix
+- Fixed useApi hook to match component expectations
+- Filtered active transfers to show only running/queued/pending jobs
 
 ### Migration Plan Files
 - FILEORBIT_MANTINE_MIGRATION_PLAN.md - Complete migration strategy
@@ -795,13 +816,12 @@ To continue where we left off:
 2. Switch to migration branch: `git checkout feature/mantine-migration`
 3. Start backend: `./manage.sh start backend`
 4. Start Mantine frontend: `cd frontend-mantine && npm run dev`
-5. Access at http://localhost:3000 (or check terminal for actual port)
+5. Access at http://localhost:3001 (port may vary if 3000 is in use)
 
-### Next Steps (Phase 2)
-- Transfer list with real-time monitoring
-- Multi-step transfer creation form
-- Transfer history with filtering
-- All remaining pages (Templates, Logs, Settings)
+### Next Steps (Phase 3)
+- Templates page - Transfer template CRUD
+- Logs page - System logs viewer
+- Settings page - Application configuration
 
 ### Known Issues
 - TypeScript error in console about Endpoint export (cosmetic, doesn't affect functionality)
