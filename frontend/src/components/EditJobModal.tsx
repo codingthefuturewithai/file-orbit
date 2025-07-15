@@ -1,270 +1,115 @@
-import React, { useState, useEffect } from 'react';
-import { Job, Endpoint } from '../types';
-import api from '../services/api';
+import { Modal, TextInput, Stack, Button, Group, Checkbox, Text } from '@mantine/core';
+import { useForm } from '@mantine/form';
+import { notifications } from '@mantine/notifications';
+import type { Job } from '../types';
+import { useApi } from '../hooks/useApi';
 
 interface EditJobModalProps {
-  job: Job | null;
-  show: boolean;
+  job: Job;
+  opened: boolean;
   onClose: () => void;
-  onJobUpdated: () => void;
+  onSave: () => void;
 }
 
-const EditJobModal: React.FC<EditJobModalProps> = ({ job, show, onClose, onJobUpdated }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    source_endpoint_id: '',
-    source_path: '',
-    destination_endpoint_id: '',
-    destination_path: '',
-    file_pattern: '',
-    delete_source_after_transfer: false,
+export default function EditJobModal({ job, opened, onClose, onSave }: EditJobModalProps) {
+  const { callApi, loading } = useApi();
+
+  const form = useForm({
+    initialValues: {
+      source_path: job.source_path,
+      destination_path: job.destination_path,
+      file_pattern: job.file_pattern || '*',
+      delete_source_after_transfer: job.delete_source_after_transfer,
+      execute_immediately: false,
+    },
+    validate: {
+      source_path: (value) => (!value ? 'Source path is required' : null),
+      destination_path: (value) => (!value ? 'Destination path is required' : null),
+    },
   });
-  const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [executeAfterSave, setExecuteAfterSave] = useState(false);
 
-  useEffect(() => {
-    if (show) {
-      fetchEndpoints();
-      if (job) {
-        setFormData({
-          name: job.name,
-          source_endpoint_id: job.source_endpoint_id,
-          source_path: job.source_path,
-          destination_endpoint_id: job.destination_endpoint_id,
-          destination_path: job.destination_path,
-          file_pattern: job.file_pattern || '',
-          delete_source_after_transfer: job.delete_source_after_transfer,
-        });
-      }
-    }
-  }, [job, show]);
-
-  const fetchEndpoints = async () => {
-    setLoading(true);
+  const handleSubmit = async (values: typeof form.values) => {
     try {
-      const response = await api.get('/endpoints');
-      setEndpoints(response.data);
+      const endpoint = values.execute_immediately 
+        ? `/jobs/${job.id}/update-and-execute`
+        : `/jobs/${job.id}`;
+
+      await callApi(endpoint, 'PUT', {
+        source_path: values.source_path,
+        destination_path: values.destination_path,
+        file_pattern: values.file_pattern,
+        delete_source_after_transfer: values.delete_source_after_transfer,
+      });
+
+      notifications.show({
+        title: 'Success',
+        message: values.execute_immediately 
+          ? 'Transfer updated and execution started'
+          : 'Transfer updated successfully',
+        color: 'green',
+      });
+
+      onSave();
     } catch (error) {
-      console.error('Failed to fetch endpoints:', error);
-      setError('Failed to load endpoints');
-    } finally {
-      setLoading(false);
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to update transfer',
+        color: 'red',
+      });
     }
   };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!job) return;
-
-    setSaving(true);
-    setError(null);
-
-    try {
-      if (executeAfterSave) {
-        // Use the update-and-execute endpoint
-        await api.put(`/jobs/${job.id}/update-and-execute`, formData);
-      } else {
-        // Just update the job
-        await api.put(`/jobs/${job.id}`, formData);
-      }
-      onJobUpdated();
-      onClose();
-    } catch (error: any) {
-      setError(error.response?.data?.detail || 'Failed to update job');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    if (type === 'checkbox') {
-      setFormData(prev => ({
-        ...prev,
-        [name]: (e.target as HTMLInputElement).checked
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
-  };
-
-  if (!show || !job) return null;
 
   return (
-    <>
-      <div className="modal-backdrop show" onClick={onClose}></div>
-      <div className="modal show" tabIndex={-1} style={{ display: 'flex' }}>
-        <div className="modal-dialog modal-dialog-centered modal-lg">
-          <div className="modal-content">
-            <form onSubmit={handleSubmit}>
-              <div className="modal-header">
-                <h5 className="modal-title">Edit Transfer - {job.name}</h5>
-                <button type="button" className="btn-close" onClick={onClose}></button>
-              </div>
-              <div className="modal-body">
-                {error && (
-                  <div className="alert alert-danger alert-dismissible" role="alert">
-                    {error}
-                    <button 
-                      type="button" 
-                      className="btn-close" 
-                      onClick={() => setError(null)}
-                    ></button>
-                  </div>
-                )}
+    <Modal 
+      opened={opened} 
+      onClose={onClose} 
+      title="Edit Transfer" 
+      size="md"
+    >
+      <form onSubmit={form.onSubmit(handleSubmit)}>
+        <Stack>
+          <TextInput
+            label="Source Path"
+            description="Path on the source endpoint"
+            required
+            {...form.getInputProps('source_path')}
+          />
 
-                <div className="mb-3">
-                  <label className="form-label">Transfer Name</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+          <TextInput
+            label="Destination Path"
+            description="Path on the destination endpoint. Supports variables: {year}, {month}, {day}, {timestamp}, {filename}"
+            required
+            {...form.getInputProps('destination_path')}
+          />
 
-                <div className="row">
-                  <div className="col-md-6">
-                    <div className="mb-3">
-                      <label className="form-label">Source Endpoint</label>
-                      <select
-                        className="form-select"
-                        name="source_endpoint_id"
-                        value={formData.source_endpoint_id}
-                        onChange={handleChange}
-                        required
-                        disabled={loading}
-                      >
-                        <option value="">Select endpoint...</option>
-                        {endpoints.map(endpoint => (
-                          <option key={endpoint.id} value={endpoint.id}>
-                            {endpoint.name} ({endpoint.type})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="mb-3">
-                      <label className="form-label">Source Path</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="source_path"
-                        value={formData.source_path}
-                        onChange={handleChange}
-                        placeholder="/path/to/source"
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
+          <TextInput
+            label="File Pattern"
+            description="Pattern to match files (e.g., *.mp4, *.mov)"
+            {...form.getInputProps('file_pattern')}
+          />
 
-                <div className="row">
-                  <div className="col-md-6">
-                    <div className="mb-3">
-                      <label className="form-label">Destination Endpoint</label>
-                      <select
-                        className="form-select"
-                        name="destination_endpoint_id"
-                        value={formData.destination_endpoint_id}
-                        onChange={handleChange}
-                        required
-                        disabled={loading}
-                      >
-                        <option value="">Select endpoint...</option>
-                        {endpoints.map(endpoint => (
-                          <option key={endpoint.id} value={endpoint.id}>
-                            {endpoint.name} ({endpoint.type})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="mb-3">
-                      <label className="form-label">Destination Path</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="destination_path"
-                        value={formData.destination_path}
-                        onChange={handleChange}
-                        placeholder="/path/to/destination"
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
+          <Checkbox
+            label="Delete source files after successful transfer"
+            {...form.getInputProps('delete_source_after_transfer', { type: 'checkbox' })}
+          />
 
-                <div className="mb-3">
-                  <label className="form-label">File Pattern</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="file_pattern"
-                    value={formData.file_pattern}
-                    onChange={handleChange}
-                    placeholder="*.mp4, *.mov (leave empty for all files)"
-                  />
-                  <small className="form-text text-muted">
-                    Use wildcards: * matches any characters, ? matches single character
-                  </small>
-                </div>
+          {job.status === 'failed' && (
+            <Checkbox
+              label="Execute immediately after saving"
+              {...form.getInputProps('execute_immediately', { type: 'checkbox' })}
+            />
+          )}
 
-                <div className="mb-3">
-                  <div className="form-check">
-                    <input
-                      type="checkbox"
-                      className="form-check-input"
-                      id="deleteSource"
-                      name="delete_source_after_transfer"
-                      checked={formData.delete_source_after_transfer}
-                      onChange={handleChange}
-                    />
-                    <label className="form-check-label" htmlFor="deleteSource">
-                      Delete source files after successful transfer
-                    </label>
-                  </div>
-                </div>
-
-                <div className="mb-3">
-                  <div className="form-check">
-                    <input
-                      type="checkbox"
-                      className="form-check-input"
-                      id="executeAfterSave"
-                      checked={executeAfterSave}
-                      onChange={(e) => setExecuteAfterSave(e.target.checked)}
-                    />
-                    <label className="form-check-label" htmlFor="executeAfterSave">
-                      Execute transfer immediately after saving
-                    </label>
-                  </div>
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={onClose}>
-                  Cancel
-                </button>
-                <button type="submit" className="btn btn-primary" disabled={saving}>
-                  {saving ? 'Saving...' : (executeAfterSave ? 'Save & Execute' : 'Save Changes')}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </>
+          <Group justify="flex-end" mt="md">
+            <Button variant="light" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" loading={loading}>
+              Save Changes
+            </Button>
+          </Group>
+        </Stack>
+      </form>
+    </Modal>
   );
-};
-
-export default EditJobModal;
+}

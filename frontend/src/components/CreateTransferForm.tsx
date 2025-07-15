@@ -1,310 +1,380 @@
-import React, { useState, useEffect } from 'react';
-import api from '../services/api';
-import { Job, Endpoint, TransferTemplate } from '../types';
+import { useState, useEffect } from 'react';
+import { Modal, Stepper, Button, Group, TextInput, Select, Checkbox, Stack, Text, Radio, NumberInput } from '@mantine/core';
+import { useForm } from '@mantine/form';
+import { notifications } from '@mantine/notifications';
+import { useNavigate } from 'react-router-dom';
+import type { Endpoint, TransferTemplate } from '../types';
+import { useApi } from '../hooks/useApi';
 
 interface CreateTransferFormProps {
-  onSuccess: (job: Job) => void;
-  onCancel: () => void;
+  opened: boolean;
+  onClose: () => void;
 }
 
-const CreateTransferForm: React.FC<CreateTransferFormProps> = ({ onSuccess, onCancel }) => {
+interface FormValues {
+  name: string;
+  type: 'manual' | 'scheduled' | 'template';
+  template_id?: string;
+  source_endpoint_id: string;
+  source_path: string;
+  destination_endpoint_id: string;
+  destination_path: string;
+  file_pattern: string;
+  delete_source_after_transfer: boolean;
+  schedule?: string;
+  schedule_type?: 'daily' | 'weekly' | 'custom';
+  schedule_time?: string;
+  schedule_days?: string[];
+}
+
+export default function CreateTransferForm({ opened, onClose }: CreateTransferFormProps) {
+  const [active, setActive] = useState(0);
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [templates, setTemplates] = useState<TransferTemplate[]>([]);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
-  const [useTemplate, setUseTemplate] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    type: 'manual' as 'manual' | 'scheduled' | 'event_triggered',
-    source_endpoint_id: '',
-    source_path: '',
-    destination_endpoint_id: '',
-    destination_path: '',
-    file_pattern: '',
-    delete_source_after_transfer: false,
-    schedule: '',
-    is_active: true
+  const { callApi, loading } = useApi();
+  const navigate = useNavigate();
+
+  const form = useForm<FormValues>({
+    initialValues: {
+      name: '',
+      type: 'manual',
+      template_id: undefined,
+      source_endpoint_id: '',
+      source_path: '',
+      destination_endpoint_id: '',
+      destination_path: '',
+      file_pattern: '*',
+      delete_source_after_transfer: false,
+      schedule: undefined,
+      schedule_type: 'daily',
+      schedule_time: '00:00',
+      schedule_days: [],
+    },
+    validate: (values) => {
+      if (active === 0) {
+        return {
+          name: !values.name ? 'Transfer name is required' : null,
+          template_id: values.type === 'template' && !values.template_id ? 'Please select a template' : null,
+        };
+      }
+      if (active === 1) {
+        return {
+          source_endpoint_id: !values.source_endpoint_id ? 'Source endpoint is required' : null,
+          source_path: !values.source_path ? 'Source path is required' : null,
+        };
+      }
+      if (active === 2) {
+        return {
+          destination_endpoint_id: !values.destination_endpoint_id ? 'Destination endpoint is required' : null,
+          destination_path: !values.destination_path ? 'Destination path is required' : null,
+        };
+      }
+      return {};
+    },
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchEndpoints();
-    fetchTemplates();
-  }, []);
+    if (opened) {
+      fetchEndpoints();
+      fetchTemplates();
+    }
+  }, [opened]);
 
   const fetchEndpoints = async () => {
     try {
-      const response = await api.get('/endpoints');
-      setEndpoints(response.data.filter((ep: Endpoint) => ep.is_active));
+      const response = await callApi<Endpoint[]>('/endpoints', 'GET');
+      if (response) {
+        setEndpoints(response.filter(ep => ep.is_active));
+      }
     } catch (error) {
-      console.error('Error fetching endpoints:', error);
-      setError('Failed to load endpoints');
+      console.error('Failed to fetch endpoints:', error);
     }
   };
 
   const fetchTemplates = async () => {
     try {
-      const response = await api.get('/transfer-templates');
-      setTemplates(response.data.filter((template: TransferTemplate) => template.is_active));
-    } catch (error) {
-      console.error('Error fetching templates:', error);
-    }
-  };
-
-  const handleTemplateSelect = (templateId: string) => {
-    setSelectedTemplateId(templateId);
-    
-    if (templateId) {
-      const template = templates.find(t => t.id === templateId);
-      if (template) {
-        setFormData({
-          ...formData,
-          source_endpoint_id: template.source_endpoint_id,
-          source_path: '',  // Clear source path - user must enter it
-          destination_endpoint_id: template.destination_endpoint_id,
-          destination_path: template.destination_path_template,
-          file_pattern: template.file_pattern,
-          delete_source_after_transfer: template.delete_source_after_transfer
-        });
+      const response = await callApi<TransferTemplate[]>('/transfer-templates', 'GET');
+      if (response) {
+        setTemplates(response.filter(t => t.is_active));
       }
+    } catch (error) {
+      console.error('Failed to fetch templates:', error);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+  const loadTemplate = (templateId: string) => {
+    const template = templates.find(t => t.id === templateId);
+    if (template) {
+      form.setValues({
+        ...form.values,
+        source_endpoint_id: template.source_endpoint_id,
+        destination_endpoint_id: template.destination_endpoint_id,
+        destination_path: template.destination_path_template,
+        file_pattern: template.file_pattern,
+        delete_source_after_transfer: template.delete_source_after_transfer,
+      });
+    }
+  };
+
+  const buildSchedule = () => {
+    const { schedule_type, schedule_time, schedule_days } = form.values;
+    if (form.values.type !== 'scheduled') return undefined;
+
+    switch (schedule_type) {
+      case 'daily':
+        return `0 ${schedule_time?.split(':')[1] || '0'} ${schedule_time?.split(':')[0] || '0'} * * *`;
+      case 'weekly':
+        return `0 ${schedule_time?.split(':')[1] || '0'} ${schedule_time?.split(':')[0] || '0'} * * ${schedule_days?.join(',') || '1'}`;
+      default:
+        return form.values.schedule;
+    }
+  };
+
+  const handleSubmit = async () => {
+    const validation = form.validate();
+    if (validation.hasErrors) return;
 
     try {
       const jobData = {
-        ...formData,
-        name: formData.name || `Transfer from ${getEndpointName(formData.source_endpoint_id)} to ${getEndpointName(formData.destination_endpoint_id)}`,
-        file_pattern: formData.file_pattern || null,  // Send null instead of empty string
-        schedule: formData.type === 'scheduled' ? formData.schedule : null
+        name: form.values.name,
+        type: form.values.type === 'template' ? 'manual' : form.values.type,
+        source_endpoint_id: form.values.source_endpoint_id,
+        source_path: form.values.source_path,
+        destination_endpoint_id: form.values.destination_endpoint_id,
+        destination_path: form.values.destination_path,
+        file_pattern: form.values.file_pattern,
+        delete_source_after_transfer: form.values.delete_source_after_transfer,
+        schedule: buildSchedule(),
+        is_active: true,
       };
 
-      const response = await api.post('/jobs', jobData);
+      const response = await callApi('/jobs', 'POST', jobData);
       
-      // If manual transfer, execute it immediately
-      if (formData.type === 'manual') {
-        try {
-          await api.post(`/jobs/${response.data.id}/execute`, {});
-          response.data.status = 'queued';
-        } catch (execError) {
-          console.error('Failed to execute job:', execError);
-        }
+      if (response && form.values.type === 'manual') {
+        // Execute manual transfers immediately
+        await callApi(`/jobs/${response.id}/execute`, 'POST');
       }
-      
-      onSuccess(response.data);
-    } catch (error: any) {
-      setError(error.response?.data?.detail || 'Failed to create transfer');
-      setLoading(false);
+
+      notifications.show({
+        title: 'Success',
+        message: form.values.type === 'manual' 
+          ? 'Transfer created and started'
+          : 'Transfer created successfully',
+        color: 'green',
+      });
+
+      onClose();
+      navigate('/transfers');
+    } catch (error) {
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to create transfer',
+        color: 'red',
+      });
     }
   };
 
-  const getEndpointName = (id: string): string => {
-    const endpoint = endpoints.find(ep => ep.id === id);
-    return endpoint?.name || 'Unknown';
+  const nextStep = () => {
+    const validation = form.validate();
+    if (!validation.hasErrors) {
+      setActive((current) => (current < 4 ? current + 1 : current));
+    }
+  };
+
+  const prevStep = () => setActive((current) => (current > 0 ? current - 1 : current));
+
+  const shouldShowStep = (step: number) => {
+    if (step === 4 && form.values.type !== 'scheduled') return false;
+    return true;
+  };
+
+  const getActiveStep = () => {
+    let step = active;
+    if (active === 4 && form.values.type !== 'scheduled') {
+      step = 3;
+    }
+    return step;
   };
 
   return (
-    <form onSubmit={handleSubmit} className="transfer-form">
-      {error && (
-        <div className="alert alert-danger">{error}</div>
-      )}
-      
-      <div className="form-group">
-        <label>Start from:</label>
-        <div style={{ marginBottom: '10px' }}>
-          <label style={{ marginRight: '20px' }}>
-            <input
-              type="radio"
-              name="templateChoice"
-              checked={!useTemplate}
-              onChange={() => {
-                setUseTemplate(false);
-                setSelectedTemplateId('');
-              }}
-              style={{ marginRight: '5px' }}
+    <Modal 
+      opened={opened} 
+      onClose={onClose} 
+      title="Create Transfer" 
+      size="lg"
+    >
+      <Stepper active={getActiveStep()} onStepClick={setActive}>
+        {/* Step 1: Basic Info */}
+        <Stepper.Step label="Basic Info" description="Transfer details">
+          <Stack mt="md">
+            <TextInput
+              label="Transfer Name"
+              placeholder="My Transfer Job"
+              required
+              {...form.getInputProps('name')}
             />
-            Scratch
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="templateChoice"
-              checked={useTemplate}
-              onChange={() => setUseTemplate(true)}
-              style={{ marginRight: '5px' }}
+            
+            <Radio.Group
+              label="Transfer Type"
+              {...form.getInputProps('type')}
+            >
+              <Stack mt="xs">
+                <Radio value="manual" label="Manual - Execute immediately" />
+                <Radio value="scheduled" label="Scheduled - Run on schedule" />
+                <Radio value="template" label="From Template - Use existing template" />
+              </Stack>
+            </Radio.Group>
+
+            {form.values.type === 'template' && (
+              <Select
+                label="Select Template"
+                placeholder="Choose a template"
+                data={templates.map(t => ({ value: t.id, label: t.name }))}
+                {...form.getInputProps('template_id')}
+                onChange={(value) => {
+                  form.setFieldValue('template_id', value);
+                  if (value) loadTemplate(value);
+                }}
+              />
+            )}
+          </Stack>
+        </Stepper.Step>
+
+        {/* Step 2: Source Configuration */}
+        <Stepper.Step label="Source" description="Configure source">
+          <Stack mt="md">
+            <Select
+              label="Source Endpoint"
+              placeholder="Select source endpoint"
+              required
+              data={endpoints.map(ep => ({ 
+                value: ep.id, 
+                label: `${ep.name} (${ep.type.toUpperCase()})` 
+              }))}
+              {...form.getInputProps('source_endpoint_id')}
             />
-            Use a template
-          </label>
-        </div>
-      </div>
 
-      {useTemplate && (
-        <div className="form-group">
-          <label>Select Template</label>
-          <select
-            className="form-control"
-            value={selectedTemplateId}
-            onChange={(e) => handleTemplateSelect(e.target.value)}
-          >
-            <option value="">Select a template...</option>
-            {templates.map(template => (
-              <option key={template.id} value={template.id}>
-                {template.name} ({template.event_type})
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-      
-      <div className="form-group">
-        <label>Transfer Name (optional)</label>
-        <input 
-          type="text" 
-          className="form-control"
-          placeholder="e.g., Daily backup to S3"
-          value={formData.name}
-          onChange={(e) => setFormData({...formData, name: e.target.value})}
-        />
-      </div>
+            <TextInput
+              label="Source Path"
+              placeholder="/path/to/source/files"
+              description="Path on the source endpoint"
+              required
+              {...form.getInputProps('source_path')}
+            />
+          </Stack>
+        </Stepper.Step>
 
-      <div className="form-group">
-        <label>Transfer Type</label>
-        <select 
-          className="form-control"
-          value={formData.type}
-          onChange={(e) => setFormData({...formData, type: e.target.value as any})}
-        >
-          <option value="manual">Manual (Run Once)</option>
-          <option value="scheduled">Scheduled</option>
-        </select>
-      </div>
+        {/* Step 3: Destination Configuration */}
+        <Stepper.Step label="Destination" description="Configure destination">
+          <Stack mt="md">
+            <Select
+              label="Destination Endpoint"
+              placeholder="Select destination endpoint"
+              required
+              data={endpoints.map(ep => ({ 
+                value: ep.id, 
+                label: `${ep.name} (${ep.type.toUpperCase()})` 
+              }))}
+              {...form.getInputProps('destination_endpoint_id')}
+            />
 
-      {formData.type === 'scheduled' && (
-        <div className="form-group">
-          <label>Schedule</label>
-          <select 
-            className="form-control"
-            value={formData.schedule}
-            onChange={(e) => setFormData({...formData, schedule: e.target.value})}
-            required
-          >
-            <option value="">Select schedule</option>
-            <option value="@hourly">Hourly</option>
-            <option value="@daily">Daily</option>
-            <option value="@weekly">Weekly</option>
-            <option value="@monthly">Monthly</option>
-          </select>
-        </div>
-      )}
-      
-      <div className="form-group">
-        <label>Source Endpoint</label>
-        <select 
-          className="form-control"
-          value={formData.source_endpoint_id}
-          onChange={(e) => setFormData({...formData, source_endpoint_id: e.target.value})}
-          required
-        >
-          <option value="">Select source endpoint</option>
-          {endpoints.map(endpoint => (
-            <option key={endpoint.id} value={endpoint.id}>
-              {endpoint.name} ({endpoint.type.toUpperCase()})
-              {endpoint.max_concurrent_transfers <= 2 && ' (Throttled)'}
-            </option>
-          ))}
-        </select>
-      </div>
+            <TextInput
+              label="Destination Path"
+              placeholder="/path/to/destination/{year}/{month}/{day}/{filename}"
+              description="Path on the destination endpoint. Supports variables: {year}, {month}, {day}, {timestamp}, {filename}"
+              required
+              {...form.getInputProps('destination_path')}
+            />
+          </Stack>
+        </Stepper.Step>
 
-      <div className="form-group">
-        <label>Source Path {useTemplate && selectedTemplateId && <span className="text-warning">(Required - not provided by template)</span>}</label>
-        <input 
-          type="text" 
-          className="form-control"
-          placeholder="/path/to/source/files"
-          value={formData.source_path}
-          onChange={(e) => setFormData({...formData, source_path: e.target.value})}
-          required
-        />
-        <small className="form-text">Full path to source directory or file</small>
-      </div>
+        {/* Step 4: Transfer Options */}
+        <Stepper.Step label="Options" description="Additional options">
+          <Stack mt="md">
+            <TextInput
+              label="File Pattern"
+              placeholder="*.mp4"
+              description="Pattern to match files (e.g., *.mp4, *.mov, *)"
+              {...form.getInputProps('file_pattern')}
+            />
 
-      <div className="form-group">
-        <label>Destination Endpoint</label>
-        <select 
-          className="form-control"
-          value={formData.destination_endpoint_id}
-          onChange={(e) => setFormData({...formData, destination_endpoint_id: e.target.value})}
-          required
-        >
-          <option value="">Select destination endpoint</option>
-          {endpoints.map(endpoint => (
-            <option key={endpoint.id} value={endpoint.id}>
-              {endpoint.name} ({endpoint.type.toUpperCase()})
-              {endpoint.max_concurrent_transfers <= 2 && ' (Throttled)'}
-            </option>
-          ))}
-        </select>
-      </div>
+            <Checkbox
+              label="Delete source files after successful transfer"
+              {...form.getInputProps('delete_source_after_transfer', { type: 'checkbox' })}
+            />
+          </Stack>
+        </Stepper.Step>
 
-      <div className="form-group">
-        <label>Destination Path {useTemplate && selectedTemplateId && <span className="text-info">(From template - can be modified)</span>}</label>
-        <input 
-          type="text" 
-          className="form-control"
-          placeholder="/path/to/destination"
-          value={formData.destination_path}
-          onChange={(e) => setFormData({...formData, destination_path: e.target.value})}
-          required
-        />
-        <small className="form-text">Full path to destination directory</small>
-      </div>
+        {/* Step 5: Schedule (only for scheduled transfers) */}
+        {shouldShowStep(4) && (
+          <Stepper.Step label="Schedule" description="Set schedule">
+            <Stack mt="md">
+              <Radio.Group
+                label="Schedule Type"
+                {...form.getInputProps('schedule_type')}
+              >
+                <Stack mt="xs">
+                  <Radio value="daily" label="Daily" />
+                  <Radio value="weekly" label="Weekly" />
+                  <Radio value="custom" label="Custom Cron Expression" />
+                </Stack>
+              </Radio.Group>
 
-      <div className="form-group">
-        <label>File Pattern (optional) {useTemplate && selectedTemplateId && formData.file_pattern && <span className="text-info">(From template - can be modified)</span>}</label>
-        <input 
-          type="text" 
-          className="form-control"
-          placeholder="*.mp4 or leave empty for all files"
-          value={formData.file_pattern}
-          onChange={(e) => setFormData({...formData, file_pattern: e.target.value})}
-        />
-        <small className="form-text">Use * for all files, or patterns like *.mp4, *.mov</small>
-      </div>
+              {form.values.schedule_type !== 'custom' && (
+                <TextInput
+                  label="Time"
+                  type="time"
+                  {...form.getInputProps('schedule_time')}
+                />
+              )}
 
-      <div className="form-group">
-        <label>
-          <input 
-            type="checkbox"
-            checked={formData.delete_source_after_transfer}
-            onChange={(e) => setFormData({...formData, delete_source_after_transfer: e.target.checked})}
-          />
-          {' '}Delete source files after successful transfer
-        </label>
-      </div>
+              {form.values.schedule_type === 'weekly' && (
+                <Checkbox.Group
+                  label="Days of Week"
+                  {...form.getInputProps('schedule_days')}
+                >
+                  <Group mt="xs">
+                    <Checkbox value="1" label="Mon" />
+                    <Checkbox value="2" label="Tue" />
+                    <Checkbox value="3" label="Wed" />
+                    <Checkbox value="4" label="Thu" />
+                    <Checkbox value="5" label="Fri" />
+                    <Checkbox value="6" label="Sat" />
+                    <Checkbox value="0" label="Sun" />
+                  </Group>
+                </Checkbox.Group>
+              )}
 
-      <div className="form-actions">
-        <button 
-          type="submit" 
-          className="btn btn-primary"
-          disabled={loading}
-        >
-          {loading ? 'Creating...' : (formData.type === 'manual' ? 'Create & Execute' : 'Create Transfer')}
-        </button>
-        <button 
-          type="button" 
-          className="btn btn-secondary"
-          onClick={onCancel}
-          disabled={loading}
-        >
+              {form.values.schedule_type === 'custom' && (
+                <TextInput
+                  label="Cron Expression"
+                  placeholder="0 0 * * *"
+                  description="Enter a valid cron expression"
+                  {...form.getInputProps('schedule')}
+                />
+              )}
+            </Stack>
+          </Stepper.Step>
+        )}
+      </Stepper>
+
+      <Group justify="flex-end" mt="xl">
+        <Button variant="default" onClick={onClose}>
           Cancel
-        </button>
-      </div>
-    </form>
+        </Button>
+        {active > 0 && (
+          <Button variant="default" onClick={prevStep}>
+            Back
+          </Button>
+        )}
+        {active < (form.values.type === 'scheduled' ? 4 : 3) ? (
+          <Button onClick={nextStep}>Next</Button>
+        ) : (
+          <Button onClick={handleSubmit} loading={loading}>
+            Create Transfer
+          </Button>
+        )}
+      </Group>
+    </Modal>
   );
-};
-
-export default CreateTransferForm;
+}

@@ -811,12 +811,11 @@ To continue where we left off:
 - PHASE_0_CHECKLIST.md - Quick start checklist
 (These files were restored from feature/frontend-redesign branch)
 
-### Session Resume Instructions for Mantine Migration
+### Session Resume Instructions
 1. Navigate to project: `cd /Users/timkitchens/projects/consumer-apps/file-orbit`
-2. Switch to migration branch: `git checkout feature/mantine-migration`
-3. Start backend: `./manage.sh start backend`
-4. Start Mantine frontend: `cd frontend-mantine && npm run dev`
-5. Access at http://localhost:3001 (port may vary if 3000 is in use)
+2. Start backend: `./manage.sh start backend`
+3. Start frontend: `./manage.sh start frontend`
+4. Access at http://localhost:3000 (port may vary if 3000 is in use)
 
 ### Phase 3 ✅ COMPLETE (July 15, 2025)
 - **Templates Page**: Full CRUD for transfer templates with event types and chain rules
@@ -835,16 +834,14 @@ To continue where we left off:
 6. **CP-7**: Add comprehensive error handling
 7. **CP-8**: Implement dark theme consistency
 
-See `frontend-mantine/KNOWN_ISSUES.md` for detailed descriptions.
+See `frontend/KNOWN_ISSUES.md` for detailed descriptions.
 
 ### Session Resume Instructions (After Merge to Main)
 1. Navigate to project: `cd /Users/timkitchens/projects/consumer-apps/file-orbit`
 2. Pull latest: `git checkout main && git pull`
 3. Start backend: `./manage.sh start backend`
-4. Start frontend: `cd frontend-mantine && npm run dev`
-5. Access at http://localhost:3001 (port may vary if 3000 is in use)
-
-Note: After CP-3 is complete, the frontend will be in the `frontend` directory instead of `frontend-mantine`.
+4. Start frontend: `./manage.sh start frontend`
+5. Access at http://localhost:3000 (port may vary if 3000 is in use)
 
 ## CRITICAL: How to CORRECTLY Report Frontend Status
 

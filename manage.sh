@@ -132,7 +132,7 @@ start_all_services() {
     check_venv
     
     start_service "backend" "cd '$BACKEND_DIR' && source venv/bin/activate && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
-    start_service "frontend" "cd '$FRONTEND_DIR' && BROWSER=none npm start"
+    start_service "frontend" "cd '$FRONTEND_DIR' && npm run dev"
     start_service "worker" "cd '$BACKEND_DIR' && source venv/bin/activate && python worker.py"
     start_service "event-monitor" "cd '$BACKEND_DIR' && source venv/bin/activate && python event_monitor_service.py"
     # start_service "scheduler" "cd '$BACKEND_DIR' && source venv/bin/activate && python scheduler_service.py"
@@ -267,7 +267,7 @@ case "$CMD" in
             all) start_all_services ;;
             docker) start_docker ;;
             backend) check_venv; start_service "backend" "cd '$BACKEND_DIR' && source venv/bin/activate && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000" ;;
-            frontend) start_service "frontend" "cd '$FRONTEND_DIR' && BROWSER=none npm start" ;;
+            frontend) start_service "frontend" "cd '$FRONTEND_DIR' && npm run dev" ;;
             worker) check_venv; start_service "worker" "cd '$BACKEND_DIR' && source venv/bin/activate && python worker.py" ;;
             event-monitor) check_venv; start_service "event-monitor" "cd '$BACKEND_DIR' && source venv/bin/activate && python event_monitor_service.py" ;;
             scheduler) check_venv; start_service "scheduler" "cd '$BACKEND_DIR' && source venv/bin/activate && python scheduler_service.py" ;;
