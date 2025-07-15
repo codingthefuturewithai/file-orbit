@@ -845,3 +845,42 @@ See `frontend-mantine/KNOWN_ISSUES.md` for detailed descriptions.
 5. Access at http://localhost:3001 (port may vary if 3000 is in use)
 
 Note: After CP-3 is complete, the frontend will be in the `frontend` directory instead of `frontend-mantine`.
+
+## CRITICAL: How to CORRECTLY Report Frontend Status
+
+### THE PROBLEM I KEEP MAKING:
+I repeatedly claim the frontend is running on a port without verifying, causing frustration and wasted time.
+
+### THE SOLUTION - MANDATORY VERIFICATION PROCESS:
+
+1. **NEVER claim the frontend is running without verification**
+2. **NEVER assume a port number**
+3. **ALWAYS run these commands IN THIS ORDER:**
+
+```bash
+# Step 1: Find ALL Vite/npm processes
+ps aux | grep -E "vite|npm run dev" | grep -v grep
+
+# Step 2: For EACH Vite process found, check its ACTUAL port
+lsof -p [PID] -P | grep LISTEN
+
+# Step 3: Only report the VERIFIED port number
+```
+
+4. **Common mistakes I make:**
+   - Assuming Vite uses port 5173 (it uses 3000 when configured)
+   - Reporting the wrong port when multiple processes exist
+   - Claiming success without verification
+   - Checking old/dead processes instead of active ones
+
+5. **What to tell the user:**
+   - "Let me verify the frontend port..."
+   - "The frontend is running on port [VERIFIED_PORT]"
+   - OR: "The frontend is not currently running"
+   - NEVER: "The frontend is running on port 3000" without verification
+
+### REMEMBER:
+- Multiple Vite processes can exist (check ALL of them)
+- Vite respects the port in vite.config.ts (often 3000, not 5173)
+- Process can die while I'm working - always reverify
+- The user has corrected me on this MULTIPLE times - NO MORE EXCUSES
