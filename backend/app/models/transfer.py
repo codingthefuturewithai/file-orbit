@@ -22,8 +22,11 @@ class Transfer(Base):
     
     # File information
     file_name = Column(String, nullable=False)
-    file_path = Column(String, nullable=False)
+    file_path = Column(String, nullable=False)  # Source file path
     file_size = Column(Integer, nullable=False)
+    
+    # Destination tracking (for chain job support)
+    destination_path = Column(String, nullable=True)  # Actual destination path after template substitution
     
     # Transfer progress
     status = Column(SQLEnum(TransferStatus), nullable=False, default=TransferStatus.PENDING)

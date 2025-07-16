@@ -120,6 +120,17 @@ class JobProcessor:
     async def execute_job(self, db, job: Job):
         """Execute a job by creating and running transfers"""
         try:
+            # PHASE 1: Log job configuration for tracking
+            logger.info(f"[FILE_TRACKING] Starting job {job.id}:")
+            logger.info(f"[FILE_TRACKING]   Type: {job.type}")
+            logger.info(f"[FILE_TRACKING]   Source: {job.source_endpoint.name} ({job.source_endpoint.type.value})")
+            logger.info(f"[FILE_TRACKING]   Source path: {job.source_path}")
+            logger.info(f"[FILE_TRACKING]   File pattern: {job.file_pattern}")
+            logger.info(f"[FILE_TRACKING]   Destination: {job.destination_endpoint.name} ({job.destination_endpoint.type.value})")
+            logger.info(f"[FILE_TRACKING]   Destination path: {job.destination_path}")
+            logger.info(f"[FILE_TRACKING]   Parent job ID: {job.parent_job_id}")
+            if job.config:
+                logger.info(f"[FILE_TRACKING]   Config: {json.dumps(job.config, indent=2)}")
             # Check throttling
             can_proceed = await self.throttle_controller.can_start_transfer(
                 job.source_endpoint_id,
@@ -144,6 +155,11 @@ class JobProcessor:
                 job.total_runs += 1
                 await db.commit()
                 return
+            
+            # PHASE 1: Log file discovery for tracking
+            logger.info(f"[FILE_TRACKING] Job {job.id} - Found {len(files)} files to transfer:")
+            for idx, file_info in enumerate(files):
+                logger.info(f"[FILE_TRACKING]   [{idx+1}/{len(files)}] {file_info['name']} (size: {file_info['size']} bytes, path: {file_info['path']})")
             
             # Create transfer records
             transfers = []
@@ -170,11 +186,23 @@ class JobProcessor:
             # Execute transfers
             success_count = 0
             transferred_size = 0
+            successful_transfers = []  # PHASE 1: Track successful transfers
+            failed_transfers = []      # PHASE 1: Track failed transfers
+            
             for transfer in transfers:
                 try:
                     await self._execute_transfer(db, job, transfer)
                     success_count += 1
                     transferred_size += transfer.file_size
+                    
+                    # PHASE 1: Track successful transfer
+                    successful_transfers.append({
+                        'file_name': transfer.file_name,
+                        'source_path': transfer.file_path,
+                        'destination_path': transfer.destination_path,
+                        'size': transfer.file_size
+                    })
+                    logger.info(f"[FILE_TRACKING] Transfer SUCCESS: {transfer.file_name} -> {transfer.destination_path}")
                     
                     # Update job progress
                     job.transferred_files = success_count
@@ -186,6 +214,25 @@ class JobProcessor:
                     transfer.status = TransferStatus.FAILED
                     transfer.error_message = str(e)
                     await db.commit()
+                    
+                    # PHASE 1: Track failed transfer
+                    failed_transfers.append({
+                        'file_name': transfer.file_name,
+                        'source_path': transfer.file_path,
+                        'destination_path': transfer.destination_path,
+                        'error': str(e)
+                    })
+                    logger.error(f"[FILE_TRACKING] Transfer FAILED: {transfer.file_name} - Error: {e}")
+            
+            # PHASE 1: Log job summary for tracking
+            logger.info(f"[FILE_TRACKING] Job {job.id} Summary:")
+            logger.info(f"[FILE_TRACKING]   Total files: {len(transfers)}")
+            logger.info(f"[FILE_TRACKING]   Successful: {len(successful_transfers)}")
+            logger.info(f"[FILE_TRACKING]   Failed: {len(failed_transfers)}")
+            if successful_transfers:
+                logger.info(f"[FILE_TRACKING]   Successful transfers:")
+                for idx, transfer in enumerate(successful_transfers):
+                    logger.info(f"[FILE_TRACKING]     [{idx+1}] {transfer['file_name']} -> {transfer['destination_path']}")
             
             # Update job status
             if success_count == len(transfers):
@@ -193,8 +240,8 @@ class JobProcessor:
                 job.completed_at = datetime.now(timezone.utc)
                 job.successful_runs += 1
                 
-                # Check for chain jobs
-                await self._process_chain_jobs(db, job)
+                # Check for chain jobs - pass successful transfers for future use
+                await self._process_chain_jobs(db, job, successful_transfers)
             else:
                 job.status = JobStatus.FAILED
                 job.completed_at = datetime.now(timezone.utc)
@@ -300,8 +347,13 @@ class JobProcessor:
             # Build source and destination paths
             source_path = self._build_remote_path("source", job.source_endpoint, job.source_path, transfer.file_path)
             
+            # PHASE 1: Log source path building
+            logger.info(f"[FILE_TRACKING] Source path: endpoint_type={job.source_endpoint.type.value}, base={job.source_path}, file={transfer.file_path} -> {source_path}")
+            
             # For destination, apply template substitution if the path contains template variables
             dest_base_path = job.destination_path
+            original_dest_path = dest_base_path  # PHASE 1: Track original template
+            
             if any(var in dest_base_path for var in ['{year}', '{month}', '{day}', '{filename}', '{original_filename}', '{timestamp}']):
                 # Apply template substitution
                 substituted_path = self._apply_path_template(dest_base_path, transfer.file_name)
@@ -314,9 +366,19 @@ class JobProcessor:
                 else:
                     # Otherwise use the full substituted path
                     dest_base_path = substituted_path
+                
+                # PHASE 1: Log destination path template processing
+                logger.info(f"[FILE_TRACKING] Destination template: '{original_dest_path}' -> '{dest_base_path}'")
             
             # Build the final destination path
             dest_path = self._build_remote_path("dest", job.destination_endpoint, dest_base_path, "")
+            
+            # PHASE 1: Track the actual destination path for each file
+            # This includes the full path with filename after template substitution
+            actual_dest_file_path = f"{dest_path}/{transfer.file_name}"
+            transfer.destination_path = actual_dest_file_path
+            logger.info(f"[FILE_TRACKING] Transfer {transfer.id} - File: {transfer.file_name}, Destination: {actual_dest_file_path}")
+            await db.commit()
             
             # Track this transfer
             transfer_task = asyncio.create_task(
@@ -397,6 +459,10 @@ class JobProcessor:
         result = template
         for key, value in replacements.items():
             result = result.replace(key, value)
+        
+        # PHASE 1: Log template substitution for tracking
+        if template != result:
+            logger.info(f"[FILE_TRACKING] Template substitution: '{template}' -> '{result}' (source file: {source_file})")
             
         return result
     
@@ -482,9 +548,12 @@ class JobProcessor:
         
         await db.commit()
     
-    async def _process_chain_jobs(self, db, parent_job: Job):
+    async def _process_chain_jobs(self, db, parent_job: Job, successful_transfers: list = None):
         """Process any chain jobs after parent job completion"""
         try:
+            # PHASE 1: Log the successful transfers received (for tracking)
+            if successful_transfers:
+                logger.info(f"[FILE_TRACKING] Chain job check for parent {parent_job.id} with {len(successful_transfers)} successful transfers")
             # Check if there are chain jobs waiting for this parent
             result = await db.execute(
                 select(Job).where(

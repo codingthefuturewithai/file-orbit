@@ -201,6 +201,12 @@ def sample_job_data():
     }
 
 
+@pytest_asyncio.fixture
+async def db(db_session):
+    """Alias for db_session to match test expectations"""
+    yield db_session
+
+
 @pytest.fixture
 def sample_template_data():
     """Sample template data for testing."""
