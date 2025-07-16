@@ -32,6 +32,13 @@ cd /Users/timkitchens/projects/consumer-apps/file-orbit
 # Access UI at http://localhost:3000
 ```
 
+### Frontend Management (FIXED July 16, 2025)
+The manage.sh script now properly kills ALL frontend processes:
+- Kills processes on ports 3000-3010 (Vite's range)
+- Kills npm and vite processes by name
+- Frontend ALWAYS uses port 3000 (no more port hopping)
+- If port 3000 is busy, it attempts cleanup before failing
+
 ### Individual Services
 - Backend: `./manage.sh start backend`
 - Frontend: `./manage.sh start frontend` (uses npm run dev for Vite)
@@ -81,6 +88,27 @@ python update_test_endpoints.py
 - Local merge workflow supported via `/merge-issue` command
 - Latest commit: Implemented Settings persistence API (CP-4)
 
+## Recent Changes (Session of July 16, 2025)
+- Fixed manage.sh frontend handling:
+  - Now properly kills ALL frontend processes (npm and vite)
+  - Frontend always uses port 3000 (no more port hopping)
+  - Cleans up processes on ports 3000-3010
+- Completed CP-6: Chain rules functionality
+  - Fixed event monitor bug (chain_templates → chain_rules)
+  - Created ChainJobService for centralized chain job management
+  - Added POST /transfer-templates/{id}/execute endpoint
+  - Updated worker to properly detect chain jobs via parent_job_id
+  - Added Execute button to Templates page UI
+  - Added chain indicators in transfer lists (badge and icon)
+  - Created comprehensive test suite
+- Fixed SMB Transfer Issues:
+  - Root cause: Transfer template destination path was corrupted (lost share name prefix)
+  - Fix: Added share field to worker.py SMB config (line 262)
+  - CRITICAL: SMB destination paths MUST include share name (e.g., `file-orbit-transfers/{filename}`)
+  - Data corruption was caused by `update_test_endpoints.py` script overwriting production data
+  - Script renamed to `DANGEROUS_DO_NOT_USE_update_test_endpoints.py` to prevent future issues
+  - SMB transfers now working correctly after template destination path fixed
+
 ## Recent Changes (Session of July 15, 2025)
 - Fixed CP-1: Template selection validation bug in CreateTransferForm
 - Improved Create Transfer modal layout (size xl)
@@ -116,3 +144,40 @@ ps aux | grep -E "vite|npm run dev" | grep -v grep
 lsof -p [PID] -P | grep LISTEN
 ```
 NEVER assume port 3000 without verification!
+
+## CRITICAL RULE: Frontend Changes = MANDATORY VERIFICATION
+After ANY frontend code changes:
+1. ALWAYS run: `ps aux | grep -E "vite|npm run dev" | grep -v grep`
+2. If no process found, the frontend is NOT running - DO NOT claim it is
+3. If you start the frontend, WAIT for it to fully start before claiming it's ready
+4. NEVER say "frontend is running on port X" without verification
+5. ALWAYS tell the user they need to start/restart the frontend after changes
+
+VIOLATION OF THIS RULE IS UNACCEPTABLE.
+
+## CRITICAL RULE: Follow Existing Code Patterns
+When implementing ANY new feature:
+1. FIRST search for existing similar functionality in the codebase
+2. ANALYZE how existing code handles similar tasks
+3. STRICTLY FOLLOW the existing patterns unless there's a clear reason not to
+4. If existing pattern seems wrong, STOP and present findings to user for decision
+5. NEVER assume a new approach is better without checking existing code
+
+Examples of patterns to check:
+- How services are initialized (singletons vs instances)
+- How API endpoints structure responses
+- How database connections are managed
+- How imports are organized
+- Error handling patterns
+- Testing patterns
+
+VIOLATION: Creating new patterns without following existing ones causes bugs and inconsistency.
+
+## TODO: Document Existing Patterns
+Need to create comprehensive documentation of all recurring patterns:
+- Service initialization patterns (e.g., redis_manager singleton)
+- API response patterns
+- Database transaction patterns
+- Error handling conventions
+- Testing conventions
+- Import organization rules

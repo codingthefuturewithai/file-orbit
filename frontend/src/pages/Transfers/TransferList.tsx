@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Table, Button, Badge, Group, Progress, Text, ActionIcon, Tooltip, Stack } from '@mantine/core';
-import { IconPlayerPause, IconPlayerPlay, IconRefresh, IconX, IconEye, IconEdit } from '@tabler/icons-react';
+import { IconPlayerPause, IconPlayerPlay, IconRefresh, IconX, IconEye, IconEdit, IconLink } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
 import type { Job } from '../../types';
@@ -181,7 +181,21 @@ export default function TransferList() {
     <Table.Tr key={job.id}>
       <Table.Td>
         <Stack gap="xs">
-          <Text size="sm" fw={500}>{job.name}</Text>
+          <Group gap="xs">
+            <Text size="sm" fw={500}>{job.name}</Text>
+            {job.type === 'chained' && (
+              <Tooltip label="This is a chain transfer">
+                <Badge size="xs" color="indigo" leftSection={<IconLink size={12} />}>
+                  Chain
+                </Badge>
+              </Tooltip>
+            )}
+            {job.parent_job_id && (
+              <Tooltip label={`Part of chain from job ${job.parent_job_id.substring(0, 8)}...`}>
+                <IconLink size={14} color="var(--mantine-color-indigo-6)" />
+              </Tooltip>
+            )}
+          </Group>
           <Text size="xs" c="dimmed">{job.source_path} → {job.destination_path}</Text>
         </Stack>
       </Table.Td>

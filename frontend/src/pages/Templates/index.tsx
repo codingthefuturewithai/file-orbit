@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Container, Title, Button, Group, Paper, Table, Badge, ActionIcon, Tooltip, Text, Stack } from '@mantine/core';
-import { IconPlus, IconEdit, IconTrash, IconToggleLeft, IconToggleRight } from '@tabler/icons-react';
+import { IconPlus, IconEdit, IconTrash, IconToggleLeft, IconToggleRight, IconPlayerPlay } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
 import type { TransferTemplate } from '../../types';
@@ -107,6 +107,31 @@ export default function Templates() {
     }
   };
 
+  const handleExecute = async (template: TransferTemplate) => {
+    try {
+      const response = await callApi(`/transfer-templates/${template.id}/execute`, 'POST');
+      
+      const chainInfo = response.config?.chain_job_count 
+        ? ` with ${response.config.chain_job_count} chain jobs` 
+        : '';
+      
+      notifications.show({
+        title: 'Success',
+        message: `Transfer job created successfully${chainInfo}. Job ID: ${response.id}`,
+        color: 'green',
+      });
+      
+      // Optionally redirect to transfers page to see the job
+      // navigate('/transfers');
+    } catch (error) {
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to execute template',
+        color: 'red',
+      });
+    }
+  };
+
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString();
   };
@@ -151,6 +176,16 @@ export default function Templates() {
       </Table.Td>
       <Table.Td>
         <Group gap="xs">
+          <Tooltip label="Execute Template">
+            <ActionIcon
+              color="blue"
+              variant="light"
+              onClick={() => handleExecute(template)}
+              disabled={!template.is_active}
+            >
+              <IconPlayerPlay size={16} />
+            </ActionIcon>
+          </Tooltip>
           <Tooltip label={template.is_active ? 'Deactivate' : 'Activate'}>
             <ActionIcon
               color={template.is_active ? 'red' : 'green'}

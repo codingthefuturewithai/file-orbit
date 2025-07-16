@@ -83,17 +83,24 @@ start_service() {
         return 0
     fi
 
-    # For frontend, find an available port starting from 3000
+    # For frontend, ALWAYS use port 3000 - fail if in use
     if [ "$service" = "frontend" ]; then
-        local test_port=3000
-        while is_port_in_use "$test_port"; do
-            test_port=$((test_port + 1))
-        done
-        if [ "$test_port" != "3000" ]; then
-            echo -e "${YELLOW}Port 3000 is in use. Starting frontend on port $test_port${NC}"
+        if is_port_in_use "3000"; then
+            echo -e "${RED}Port 3000 is already in use!${NC}"
+            echo -e "${YELLOW}Attempting to clean up stale frontend processes...${NC}"
+            # Try to kill whatever is on port 3000
+            local pids_on_port
+            pids_on_port=$(lsof -t -i:3000 2>/dev/null)
+            if [ -n "$pids_on_port" ]; then
+                echo "$pids_on_port" | xargs kill -9 2>/dev/null || true
+                sleep 1
+            fi
+            # Check again
+            if is_port_in_use "3000"; then
+                echo -e "${RED}Failed to free port 3000. Please run: ./manage.sh stop frontend${NC}"
+                return 1
+            fi
         fi
-        # Replace PORT in the start command
-        start_command=$(echo "$start_command" | sed "s|npm start|PORT=$test_port npm start|")
     elif is_port_in_use "$port"; then
         echo -e "${RED}Port $port for $service is already in use by another process.${NC}"
         return 1
@@ -132,7 +139,7 @@ start_all_services() {
     check_venv
     
     start_service "backend" "cd '$BACKEND_DIR' && source venv/bin/activate && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
-    start_service "frontend" "cd '$FRONTEND_DIR' && npm run dev"
+    start_service "frontend" "cd '$FRONTEND_DIR' && exec npm run dev"
     start_service "worker" "cd '$BACKEND_DIR' && source venv/bin/activate && python worker.py"
     start_service "event-monitor" "cd '$BACKEND_DIR' && source venv/bin/activate && python event_monitor_service.py"
     # start_service "scheduler" "cd '$BACKEND_DIR' && source venv/bin/activate && python scheduler_service.py"
@@ -147,22 +154,68 @@ stop_service() {
     port=$(get_service_port "$service")
     echo -e "${YELLOW}Stopping $service...${NC}"
 
+    # Special handling for services that spawn child processes
+    if [ "$service" = "frontend" ]; then
+        # Kill any process on ports 3000-3010 (Vite's typical range)
+        for test_port in {3000..3010}; do
+            local pids_on_port
+            pids_on_port=$(lsof -t -i:"$test_port" 2>/dev/null)
+            if [ -n "$pids_on_port" ]; then
+                echo -e "${YELLOW}Killing processes on port $test_port: $pids_on_port${NC}"
+                echo "$pids_on_port" | xargs kill -9 2>/dev/null || true
+            fi
+        done
+        
+        # Also kill any npm run dev or vite processes by name
+        pkill -f "npm run dev" 2>/dev/null || true
+        pkill -f "vite" 2>/dev/null || true
+        
+        # Clean up PID file
+        rm -f "$pid_file"
+        echo -e "${GREEN}$service stopped.${NC}"
+        return
+    elif [ "$service" = "backend" ]; then
+        # Kill any process on port 8000
+        local pids_on_port
+        pids_on_port=$(lsof -t -i:8000 2>/dev/null)
+        if [ -n "$pids_on_port" ]; then
+            echo -e "${YELLOW}Killing processes on port 8000: $pids_on_port${NC}"
+            echo "$pids_on_port" | xargs kill -9 2>/dev/null || true
+        fi
+        
+        # Also kill any uvicorn processes by name
+        pkill -f "uvicorn app.main:app" 2>/dev/null || true
+        
+        # Clean up PID file
+        rm -f "$pid_file"
+        echo -e "${GREEN}$service stopped.${NC}"
+        return
+    fi
+
     # Kill by PID file
     if [ -f "$pid_file" ]; then
         local pid
         pid=$(cat "$pid_file")
         if ps -p "$pid" > /dev/null 2>&1; then
-            kill "$pid" 2>/dev/null || true
+            # Try to kill the entire process group
+            kill -- -"$pid" 2>/dev/null || kill "$pid" 2>/dev/null || true
             sleep 1
             # Force kill if still running
             if ps -p "$pid" > /dev/null 2>&1; then
-                kill -9 "$pid" 2>/dev/null || true
+                kill -9 -- -"$pid" 2>/dev/null || kill -9 "$pid" 2>/dev/null || true
             fi
         else
             echo -e "${YELLOW}Stale PID file found for $service.${NC}"
         fi
         rm -f "$pid_file"
     fi
+    
+    # Also kill by process name for Python services
+    case "$service" in
+        worker) pkill -f "python worker.py" 2>/dev/null || true ;;
+        event-monitor) pkill -f "python event_monitor_service.py" 2>/dev/null || true ;;
+        scheduler) pkill -f "python scheduler_service.py" 2>/dev/null || true ;;
+    esac
 
     # Only warn about port usage if we didn't have a PID file
     # This means another process is using the port, not our managed process
@@ -267,7 +320,7 @@ case "$CMD" in
             all) start_all_services ;;
             docker) start_docker ;;
             backend) check_venv; start_service "backend" "cd '$BACKEND_DIR' && source venv/bin/activate && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000" ;;
-            frontend) start_service "frontend" "cd '$FRONTEND_DIR' && npm run dev" ;;
+            frontend) start_service "frontend" "cd '$FRONTEND_DIR' && exec npm run dev" ;;
             worker) check_venv; start_service "worker" "cd '$BACKEND_DIR' && source venv/bin/activate && python worker.py" ;;
             event-monitor) check_venv; start_service "event-monitor" "cd '$BACKEND_DIR' && source venv/bin/activate && python event_monitor_service.py" ;;
             scheduler) check_venv; start_service "scheduler" "cd '$BACKEND_DIR' && source venv/bin/activate && python scheduler_service.py" ;;

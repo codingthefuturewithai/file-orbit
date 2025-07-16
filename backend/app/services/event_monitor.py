@@ -16,6 +16,7 @@ from app.models.transfer_template import TransferTemplate, EventType
 from app.models.job import Job, JobType, JobStatus
 from app.schemas.job import JobCreate
 from app.services.redis_manager import RedisManager
+from app.services.chain_job_service import ChainJobService
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +129,7 @@ class EventMonitor(ABC):
                 config={
                     'transfer_template_id': template.id,
                     'event_data': event_data,
-                    'chain_templates': template.chain_templates
+                    'chain_rules': template.chain_rules
                 }
             )
             
@@ -153,46 +154,12 @@ class EventMonitor(ABC):
             logger.info(f"Created job {job.id} for event template {template.name}")
             
             # Handle chain templates if any
-            if template.chain_templates:
-                await self._create_chain_jobs(job, template.chain_templates, db)
+            if template.chain_rules:
+                await ChainJobService.create_chain_jobs(job, template.chain_rules, db)
                 
         except Exception as e:
             logger.error(f"Error triggering transfer for template {template.name}: {e}")
             await db.rollback()
-            
-    async def _create_chain_jobs(self, parent_job: Job, chain_templates: List[Dict], db: AsyncSession):
-        """Create chained transfer jobs"""
-        for idx, chain in enumerate(chain_templates):
-            chain_job_data = JobCreate(
-                name=f"{parent_job.name} - Chain {idx + 1}",
-                type=JobType.CHAINED,
-                source_endpoint_id=parent_job.destination_endpoint_id,  # Previous destination becomes source
-                source_path=parent_job.destination_path,
-                destination_endpoint_id=chain['endpoint_id'],
-                destination_path=self._apply_path_template(
-                    chain['path_template'],
-                    parent_job.destination_path,
-                    {'parent_job_id': parent_job.id}
-                ),
-                file_pattern=parent_job.file_pattern,
-                delete_source_after_transfer=False,  # Don't delete intermediate files
-                is_active=True,
-                config={
-                    'parent_job_id': parent_job.id,
-                    'chain_index': idx
-                }
-            )
-            
-            chain_job = Job(
-                id=str(uuid.uuid4()),
-                **chain_job_data.model_dump(),
-                status=JobStatus.PENDING,  # Will be queued after parent completes
-                created_at=datetime.now(timezone.utc)
-            )
-            
-            db.add(chain_job)
-            
-        await db.commit()
             
     def _apply_path_template(self, template: str, source_path: str, event_data: Dict[str, Any]) -> str:
         """Apply variables to destination path template"""
