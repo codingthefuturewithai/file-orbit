@@ -221,6 +221,11 @@ const EndpointModal = ({ opened, onClose, endpoint, onSuccess }: EndpointModalPr
             ]}
             required
             {...form.getInputProps('type')}
+            onChange={(value) => {
+              form.setFieldValue('type', value || 'local');
+              // Clear config when type changes to prevent leftover fields
+              form.setFieldValue('config', {});
+            }}
           />
 
           {renderConfigFields()}

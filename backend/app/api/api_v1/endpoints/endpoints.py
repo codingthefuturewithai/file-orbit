@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
 from typing import List
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.core.database import get_db
 from app.models.endpoint import Endpoint
@@ -74,7 +74,7 @@ async def create_endpoint(
     try:
         if await rclone_service.test_remote_connection(db_endpoint.name, db_endpoint.config):
             db_endpoint.connection_status = "connected"
-            db_endpoint.last_connected = datetime.utcnow()
+            db_endpoint.last_connected = datetime.now(timezone.utc)
         else:
             db_endpoint.connection_status = "error"
     except Exception:
@@ -120,7 +120,7 @@ async def update_endpoint(
     # Update fields
     update_data = endpoint_update.model_dump(exclude_unset=True)
     if update_data:
-        update_data["updated_at"] = datetime.utcnow()
+        update_data["updated_at"] = datetime.now(timezone.utc)
         
         await db.execute(
             update(Endpoint)
@@ -185,7 +185,7 @@ async def test_endpoint_connection(
         # Update connection status
         if success:
             endpoint.connection_status = "connected"
-            endpoint.last_connected = datetime.utcnow()
+            endpoint.last_connected = datetime.now(timezone.utc)
         else:
             endpoint.connection_status = "error"
         

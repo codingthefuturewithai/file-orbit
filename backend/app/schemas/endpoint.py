@@ -19,6 +19,7 @@ class EndpointCreate(EndpointBase):
 
 class EndpointUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
+    type: Optional[EndpointType] = None
     config: Optional[Dict[str, Any]] = None
     max_concurrent_transfers: Optional[int] = Field(None, ge=1, le=100)
     max_bandwidth: Optional[int] = None
