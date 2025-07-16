@@ -19,6 +19,7 @@
 - **SFTP transfers** - ✅ FULLY IMPLEMENTED with password and SSH key support (untested with real endpoints)
 - **Log Viewer UI** - ✅ FULLY IMPLEMENTED - View all service logs in web interface
 - **Path Template Variables** - ✅ WORKING - Dynamic paths with {year}, {month}, {day}, {filename}, {timestamp}
+- **Settings Persistence** - ✅ FULLY IMPLEMENTED - All application settings saved to database with encryption for sensitive fields
 
 ### ❌ Not Working (Required for Production)
 - **S3 event monitoring** - SQS integration not configured
@@ -93,7 +94,16 @@
 - Pagination (10, 25, 50, 100 items per page)
 - Detailed job information modal
 
-#### 7. Safe File Writing (Temporary Files)
+#### 7. Settings Management
+- **General Settings**: Rclone path, logging configuration, temp directory
+- **Performance Settings**: Concurrent transfers, bandwidth limits, buffer sizes
+- **Notification Settings**: Email/SMTP configuration, webhook notifications
+- **Security Settings**: LDAP authentication, API key expiry, audit logging
+- All settings persisted to database with encryption for sensitive fields
+- Reset to defaults functionality for each section
+- Real-time loading and saving with error handling
+
+#### 8. Safe File Writing (Temporary Files)
 - **Atomic file transfers** using rclone's default behavior
 - Files upload with `.partial` suffix during transfer
 - Automatic rename to final filename only after successful completion

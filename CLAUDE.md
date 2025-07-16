@@ -76,10 +76,10 @@ python update_test_endpoints.py
 ```
 
 ## Git Workflow
-- Main branch has all features merged locally (18 commits ahead of origin)
+- Main branch has all features merged locally (19 commits ahead of origin)
 - Create feature branches: `fix/CP-[number]-description` for bugs, `feature/CP-[number]-description` for features
 - Local merge workflow supported via `/merge-issue` command
-- Latest commit: Fixed CP-1 template validation bug
+- Latest commit: Implemented Settings persistence API (CP-4)
 
 ## Recent Changes (Session of July 15, 2025)
 - Fixed CP-1: Template selection validation bug in CreateTransferForm
