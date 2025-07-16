@@ -37,7 +37,7 @@ export default function History() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
+  const [dateRange, setDateRange] = useState<[string | null, string | null]>([null, null]);
   
   const { callApi, loading } = useApi();
 
@@ -88,7 +88,13 @@ export default function History() {
     if (dateRange[0] && dateRange[1]) {
       filtered = filtered.filter(job => {
         const jobDate = new Date(job.created_at);
-        return jobDate >= dateRange[0]! && jobDate <= dateRange[1]!;
+        
+        // Parse the date strings properly
+        // Mantine sends 'YYYY-MM-DD' format, we need to ensure local timezone handling
+        const startDate = new Date(dateRange[0] + 'T00:00:00');
+        const endDate = new Date(dateRange[1] + 'T23:59:59.999');
+        
+        return jobDate >= startDate && jobDate <= endDate;
       });
     }
 
@@ -261,6 +267,31 @@ export default function History() {
               clearable
               style={{ flex: 1 }}
             />
+            <Button 
+              variant="subtle" 
+              size="xs"
+              onClick={() => {
+                const today = new Date().toISOString().split('T')[0];
+                setDateRange([today, today]);
+              }}
+            >
+              Today
+            </Button>
+            <Button 
+              variant="subtle" 
+              size="xs"
+              onClick={() => {
+                const today = new Date();
+                const weekAgo = new Date(today);
+                weekAgo.setDate(today.getDate() - 7);
+                setDateRange([
+                  weekAgo.toISOString().split('T')[0],
+                  today.toISOString().split('T')[0]
+                ]);
+              }}
+            >
+              Last 7 days
+            </Button>
             <Button variant="light" onClick={fetchJobs} loading={loading}>
               Refresh
             </Button>
