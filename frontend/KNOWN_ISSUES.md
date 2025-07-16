@@ -17,14 +17,19 @@ This document tracks known issues and missing features in the Mantine frontend m
 
 ## 🚧 Not Yet Implemented Features
 
-### 1. Settings Persistence
+### 1. ~~Settings Persistence~~ ✅ COMPLETED
 **Location**: Settings page (all tabs)  
-**Issue**: Settings are not saved or restored. The UI shows forms and allows changes, but:
-- No API endpoints exist for saving/loading settings
-- All values are hardcoded defaults
-- "Save Changes" button only shows a success notification but doesn't persist data
-**Impact**: Settings changes are lost on page refresh  
-**Status**: Backend implementation needed
+**Issue**: ~~Settings are not saved or restored. The UI shows forms and allows changes, but:~~
+~~- No API endpoints exist for saving/loading settings~~
+~~- All values are hardcoded defaults~~
+~~- "Save Changes" button only shows a success notification but doesn't persist data~~
+**Impact**: ~~Settings changes are lost on page refresh~~  
+**Status**: ✅ COMPLETED on July 15, 2025 (CP-4)
+- Implemented full settings API with database persistence
+- Added encryption for sensitive fields (passwords, API keys)
+- Frontend now loads/saves settings via API
+- Reset functionality works for individual sections
+- All 4 settings tabs (General, Performance, Notifications, Security) fully functional
 
 ### 2. Templates Page - Missing Features
 **Location**: Templates page  
@@ -84,9 +89,9 @@ This document tracks known issues and missing features in the Mantine frontend m
 ## 🎯 Next Steps
 
 1. **Priority 1**: Fix the template selection error in Create Transfer form
-2. **Priority 2**: Implement settings API endpoints in the backend
+2. **Priority 2**: Test end-to-end transfer functionality with the new UI
 3. **Priority 3**: Update gitignore to be more specific about what to ignore
 4. **Priority 4**: Add comprehensive error handling throughout the app
 
 ## 📅 Last Updated
-July 15, 2025 - Updated to reflect completion of frontend migration (CP-3)
+July 15, 2025 - Updated to reflect completion of frontend migration (CP-3) and settings persistence (CP-4)

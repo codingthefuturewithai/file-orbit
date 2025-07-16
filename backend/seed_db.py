@@ -16,6 +16,7 @@ from app.core.database import AsyncSessionLocal
 from app.models import Endpoint, TransferTemplate
 from app.models.endpoint import EndpointType
 from app.models.transfer_template import EventType
+from app.services.settings_service import SettingsService
 
 async def seed_database():
     """Add sample data to the database"""
@@ -23,11 +24,17 @@ async def seed_database():
         await seed_endpoints(session)
         await seed_transfer_templates(session)
         await session.commit()
+        
+        # Initialize settings
+        print("\nInitializing application settings...")
+        await SettingsService.initialize_settings(session)
+        
         print("\n✅ Database seeded successfully!")
         print("\n📝 Note: Example endpoints and templates have been created.")
         print("   - Local endpoints use /tmp/file-orbit/ paths (safe for testing)")
         print("   - S3 and SMB endpoints are disabled until you add credentials")
         print("   - Update the endpoints in the UI to match your environment")
+        print("   - Application settings have been initialized with default values")
         print("\n🚀 You can now access the UI at http://localhost:3000")
 
 async def seed_endpoints(session: AsyncSession):

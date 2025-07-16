@@ -23,6 +23,7 @@ FileOrbit is an enterprise UI layer built on top of rclone for video file transf
   - Transfer templates (formerly event rules)
   - Real-time progress monitoring
   - Log viewer UI
+  - Template selection in Create Transfer (CP-1 fixed)
 
 ## Session Resume Instructions
 ```bash
@@ -39,8 +40,8 @@ cd /Users/timkitchens/projects/consumer-apps/file-orbit
 
 ## Known Issues & Next Steps
 See `frontend/KNOWN_ISSUES.md` for current bugs and missing features:
-1. **CP-1**: Template selection validation bug
-2. **CP-4**: Settings persistence not implemented
+1. **CP-1**: ~~Template selection validation bug~~ ✅ FIXED
+2. **CP-4**: ~~Settings persistence not implemented~~ ✅ COMPLETED
 3. **CP-5**: Transfer functionality needs testing
 4. **CP-6**: Chain rules functionality
 5. **CP-7**: Error handling improvements
@@ -75,9 +76,24 @@ python update_test_endpoints.py
 ```
 
 ## Git Workflow
-- Main branch has all features merged
-- Create feature branches: `feature/CP-[number]-description`
+- Main branch has all features merged locally (18 commits ahead of origin)
+- Create feature branches: `fix/CP-[number]-description` for bugs, `feature/CP-[number]-description` for features
 - Local merge workflow supported via `/merge-issue` command
+- Latest commit: Fixed CP-1 template validation bug
+
+## Recent Changes (Session of July 15, 2025)
+- Fixed CP-1: Template selection validation bug in CreateTransferForm
+- Improved Create Transfer modal layout (size xl)
+- Removed Stepper descriptions for better horizontal layout
+- Fixed unused imports in CreateTransferForm
+- Completed CP-4: Settings persistence implementation
+  - Created settings database model with encryption for sensitive fields
+  - Implemented full REST API for settings management
+  - Updated frontend Settings page to use API instead of hardcoded values
+  - Added loading states and error handling
+  - Implemented reset to defaults functionality for each section
+  - Created comprehensive test suite (12 passing tests)
+- All changes merged to main locally (not pushed to remote)
 
 ## Important Files
 - `CLAUDE.md` - This memory file
@@ -85,6 +101,13 @@ python update_test_endpoints.py
 - `manage.sh` - Service management
 - `docs/ARCHITECTURE.md` - System design
 - `docs/FEATURES.md` - Feature status
+
+## Available Documentation via RAG Retriever
+IMPORTANT: Always use RAG retriever for framework-specific questions instead of guessing:
+- `mantine_v7_docs` collection - Complete Mantine v7 documentation
+- `claude_code_docs` collection - Claude Code documentation
+- `mcp_python_sdk_docs` collection - MCP Python SDK documentation
+Use: `mcp__rag-retriever__vector_search` with collection_name parameter
 
 ## CRITICAL: Frontend Port Verification
 When reporting frontend status, ALWAYS verify the actual port:
