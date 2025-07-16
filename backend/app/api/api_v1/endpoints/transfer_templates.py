@@ -10,7 +10,7 @@ from app.models.transfer_template import TransferTemplate, EventType
 from app.models.job import Job, JobType, JobStatus
 from app.schemas.transfer_template import TransferTemplateCreate, TransferTemplateUpdate, TransferTemplateResponse
 from app.schemas.job import JobCreate, JobResponse
-from app.services.chain_job_service import ChainJobService
+# from app.services.chain_job_service import ChainJobService  # PHASE 3: Now handled by worker
 from app.services.redis_manager import redis_manager
 
 router = APIRouter()
@@ -242,7 +242,8 @@ async def execute_transfer_template(
         config={
             'transfer_template_id': template.id,
             'transfer_template_name': template.name,
-            'manual_execution': True
+            'manual_execution': True,
+            'chain_rules': template.chain_rules if template.chain_rules else []  # PHASE 3: Pass chain rules to worker
         }
     )
     
@@ -258,10 +259,9 @@ async def execute_transfer_template(
     await db.commit()
     await db.refresh(job)
     
-    # Create chain jobs if template has chain rules
+    # PHASE 3: Chain jobs are now created by worker after successful transfers
+    # This allows proper path resolution for batch transfers
     chain_jobs = []
-    if template.chain_rules:
-        chain_jobs = await ChainJobService.create_chain_jobs(job, template.chain_rules, db)
     
     # Queue the primary job for execution
     await redis_manager.enqueue_job(job.id)

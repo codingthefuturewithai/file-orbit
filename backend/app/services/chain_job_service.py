@@ -170,7 +170,14 @@ class ChainJobService:
         
         for transfer in transfers:
             # Use the actual destination path from the transfer
-            actual_source_path = transfer.destination_path or transfer.destination
+            actual_source_path = transfer.destination_path
+            logger.info(f"Processing transfer {transfer.id} with destination_path: {actual_source_path}")
+            
+            # Strip remote prefix if present (e.g., "dest:path" -> "path")
+            if actual_source_path and ':' in actual_source_path:
+                # Split on first colon to remove remote prefix
+                _, actual_source_path = actual_source_path.split(':', 1)
+                logger.info(f"Stripped remote prefix from source path: {transfer.destination_path} -> {actual_source_path}")
             
             for idx, chain_rule in enumerate(chain_rules):
                 try:
@@ -178,18 +185,22 @@ class ChainJobService:
                     import os
                     filename = os.path.basename(actual_source_path)
                     
+                    # For chain jobs with specific files, use directory as source_path and filename as pattern
+                    # This avoids the "can't limit to single files when using filters" error
+                    dir_path = os.path.dirname(actual_source_path) if '/' in actual_source_path else ''
+                    
                     # Create job data for this specific file
                     chain_job_data = JobCreate(
                         name=f"{parent_job.name} - {filename} - Chain {idx + 1}",
                         type=JobType.CHAINED,
                         source_endpoint_id=parent_job.destination_endpoint_id,
-                        source_path=actual_source_path,  # Use the actual file path
+                        source_path=dir_path,  # Use directory path
                         destination_endpoint_id=chain_rule['endpoint_id'],
                         destination_path=ChainJobService._apply_path_template(
                             chain_rule['path_template'],
                             actual_source_path  # Apply template to actual path
                         ),
-                        file_pattern=None,  # No pattern needed for specific file
+                        file_pattern=filename,  # Use filename as pattern
                         delete_source_after_transfer=False,
                         is_active=True,
                         config={

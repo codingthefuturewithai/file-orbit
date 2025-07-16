@@ -200,7 +200,8 @@ class JobProcessor:
                         'file_name': transfer.file_name,
                         'source_path': transfer.file_path,
                         'destination_path': transfer.destination_path,
-                        'size': transfer.file_size
+                        'size': transfer.file_size,
+                        'transfer_id': transfer.id  # PHASE 3: Add transfer ID for chain creation
                     })
                     logger.info(f"[FILE_TRACKING] Transfer SUCCESS: {transfer.file_name} -> {transfer.destination_path}")
                     
@@ -264,12 +265,31 @@ class JobProcessor:
             # Configure source endpoint
             source_config = await self._configure_endpoint(job.source_endpoint, "source")
             
-            # List files from source
-            files = await self.rclone_service.list_files(
-                remote_name="source",
-                path=job.source_path,
-                pattern=job.file_pattern or "*"
-            )
+            # For chain jobs with specific file paths, handle differently
+            if job.type == JobType.CHAINED and job.source_path and not job.file_pattern:
+                # This is a chain job for a specific file
+                # Extract directory and filename
+                import os
+                dir_path = os.path.dirname(job.source_path)
+                file_name = os.path.basename(job.source_path)
+                
+                # If there's no directory part, use empty string for dir_path
+                if not dir_path:
+                    dir_path = ""
+                
+                # List files in the directory and filter for the specific file
+                files = await self.rclone_service.list_files(
+                    remote_name="source",
+                    path=dir_path,
+                    pattern=file_name  # Use the specific filename as pattern
+                )
+            else:
+                # Normal job - list files from source
+                files = await self.rclone_service.list_files(
+                    remote_name="source",
+                    path=job.source_path,
+                    pattern=job.file_pattern or "*"
+                )
             
             return files
         except Exception as e:
@@ -551,10 +571,31 @@ class JobProcessor:
     async def _process_chain_jobs(self, db, parent_job: Job, successful_transfers: list = None):
         """Process any chain jobs after parent job completion"""
         try:
-            # PHASE 1: Log the successful transfers received (for tracking)
-            if successful_transfers:
-                logger.info(f"[FILE_TRACKING] Chain job check for parent {parent_job.id} with {len(successful_transfers)} successful transfers")
-            # Check if there are chain jobs waiting for this parent
+            # PHASE 3: Check if we need to create per-file chain jobs
+            if successful_transfers and parent_job.config and 'chain_rules' in parent_job.config:
+                logger.info(f"[CHAIN_FIX] Creating per-file chain jobs for {len(successful_transfers)} transfers")
+                # Get the actual Transfer objects from the database
+                from app.models.transfer import Transfer
+                transfer_ids = [t['transfer_id'] for t in successful_transfers if 'transfer_id' in t]
+                
+                if transfer_ids:
+                    result = await db.execute(
+                        select(Transfer).where(Transfer.id.in_(transfer_ids))
+                    )
+                    transfers = result.scalars().all()
+                    
+                    if transfers:
+                        # Import ChainJobService to create per-file chain jobs
+                        from app.services.chain_job_service import ChainJobService
+                        chain_rules = parent_job.config['chain_rules']
+                        
+                        # Create chain jobs for each successful transfer
+                        new_chain_jobs = await ChainJobService.create_chain_jobs(
+                            parent_job, chain_rules, db, per_file_transfers=transfers
+                        )
+                        logger.info(f"[CHAIN_FIX] Created {len(new_chain_jobs)} per-file chain jobs")
+            
+            # Check if there are chain jobs waiting for this parent (legacy or newly created)
             result = await db.execute(
                 select(Job).where(
                     Job.type == JobType.CHAINED,

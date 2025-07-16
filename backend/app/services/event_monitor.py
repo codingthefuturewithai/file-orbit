@@ -16,7 +16,7 @@ from app.models.transfer_template import TransferTemplate, EventType
 from app.models.job import Job, JobType, JobStatus
 from app.schemas.job import JobCreate
 from app.services.redis_manager import RedisManager
-from app.services.chain_job_service import ChainJobService
+# from app.services.chain_job_service import ChainJobService  # PHASE 3: Now handled by worker
 
 logger = logging.getLogger(__name__)
 
@@ -153,9 +153,8 @@ class EventMonitor(ABC):
             
             logger.info(f"Created job {job.id} for event template {template.name}")
             
-            # Handle chain templates if any
-            if template.chain_rules:
-                await ChainJobService.create_chain_jobs(job, template.chain_rules, db)
+            # PHASE 3: Chain jobs are now created by worker after successful transfers
+            # Event-driven transfers typically handle single files, so this works well
                 
         except Exception as e:
             logger.error(f"Error triggering transfer for template {template.name}: {e}")
