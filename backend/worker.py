@@ -500,7 +500,7 @@ class JobProcessor:
                 chain_job.status = JobStatus.QUEUED
                 await db.commit()
                 
-                await self.redis_manager.enqueue_job(chain_job.id)
+                await redis_manager.enqueue_job(chain_job.id)
                 logger.info(f"Queued chain job {chain_job.id} after parent {parent_job.id} completed")
                 
             # Also check if parent job had transfer template with chain rules
