@@ -258,7 +258,8 @@ class JobProcessor:
                 'host': endpoint.config.get('host'),
                 'user': endpoint.config.get('user'),
                 'password': endpoint.config.get('password'),
-                'domain': endpoint.config.get('domain', 'WORKGROUP')
+                'domain': endpoint.config.get('domain', 'WORKGROUP'),
+                'share': endpoint.config.get('share')  # This was missing!
             })
         elif endpoint.type.value == 'sftp':
             sftp_config = {
@@ -488,7 +489,7 @@ class JobProcessor:
             result = await db.execute(
                 select(Job).where(
                     Job.type == JobType.CHAINED,
-                    Job.config.op('->>')('parent_job_id') == parent_job.id,
+                    Job.parent_job_id == parent_job.id,
                     Job.status == JobStatus.PENDING
                 )
             )
@@ -499,7 +500,7 @@ class JobProcessor:
                 chain_job.status = JobStatus.QUEUED
                 await db.commit()
                 
-                await self.redis_manager.queue_job(chain_job.id)
+                await self.redis_manager.enqueue_job(chain_job.id)
                 logger.info(f"Queued chain job {chain_job.id} after parent {parent_job.id} completed")
                 
             # Also check if parent job had transfer template with chain rules

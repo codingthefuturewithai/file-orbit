@@ -1,10 +1,22 @@
 #!/usr/bin/env python3
 """
-Update endpoints in the database to use test paths for local testing.
-Run this after setup_test_data.py to configure endpoints for testing.
+WARNING: This script is DANGEROUS and should NOT be used!
+It corrupts production endpoint data by overwriting it with test paths.
+
+DO NOT RUN THIS SCRIPT - it will destroy your real endpoint configurations!
+
+This script has been disabled to prevent data loss.
+"""
+import sys
+
+print("ERROR: This script has been disabled because it corrupts production data!")
+print("It overwrites real endpoint configurations with test paths.")
+print("DO NOT USE THIS SCRIPT.")
+sys.exit(1)
+
+# ORIGINAL DANGEROUS CODE BELOW - DO NOT UNCOMMENT
 """
 import asyncio
-import sys
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent))
@@ -51,5 +63,6 @@ async def update_endpoints():
         print("- Destination: /tmp/ctf-rclone-test/dest")
         print("\nYou can now create transfers between these endpoints.")
 
-if __name__ == "__main__":
-    asyncio.run(update_endpoints())
+# if __name__ == "__main__":
+#     asyncio.run(update_endpoints())
+"""
