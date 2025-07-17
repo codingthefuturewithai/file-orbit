@@ -57,10 +57,10 @@ See `frontend/KNOWN_ISSUES.md` for current bugs and missing features:
 1. **CP-1**: ~~Template selection validation bug~~ ✅ FIXED
 2. **CP-4**: ~~Settings persistence not implemented~~ ✅ COMPLETED
 3. **CP-5**: Transfer functionality needs testing
-4. **CP-6**: ~~Chain rules functionality~~ ✅ PARTIALLY COMPLETED (see CP-9 for batch transfer fix)
+4. **CP-6**: ~~Chain rules functionality~~ ✅ COMPLETED
 5. **CP-7**: Error handling improvements
 6. **CP-8**: Dark theme consistency
-7. **CP-9**: Chain rules fail for batch transfers (NEW BUG - see `/docs/CHAIN_RULES_FIX.md`)
+7. **CP-9**: ~~Chain rules fail for batch transfers~~ ✅ FIXED
 
 ## Project Structure
 ```
@@ -94,7 +94,7 @@ python update_test_endpoints.py
 - Main branch has all features merged locally (21 commits ahead of origin)
 - Create feature branches: `fix/CP-[number]-description` for bugs, `feature/CP-[number]-description` for features
 - Local merge workflow supported via `/merge-issue` command
-- Latest commit: Fixed redis_manager reference in chain job processing (CP-6)
+- Latest commit: Fixed chain rules for batch transfers (CP-9)
 
 ## Recent Changes (Session of July 16, 2025)
 - Fixed manage.sh frontend handling:
@@ -120,12 +120,14 @@ python update_test_endpoints.py
   - DatePickerInput now properly handles string dates in 'YYYY-MM-DD' format
   - Added "Today" and "Last 7 days" convenience buttons
   - Date ranges are inclusive of both start and end dates
-- Chain Rules Implementation Status:
-  - ✅ Works for single file transfers and event-driven transfers
-  - ❌ BROKEN for batch transfers and manual template execution with wildcards
-  - Root cause: Chain jobs created with unresolved template paths like `{original_filename}`
-  - Created bug CP-9 with comprehensive fix documentation in `/docs/CHAIN_RULES_FIX.md`
-  - Fixed redis_manager singleton reference error in worker.py
+- Fixed CP-9: Chain Rules for Batch Transfers (COMPLETED):
+  - ✅ Chain rules now work for ALL transfer types (single, batch, event-driven, manual)
+  - Fixed "can't limit to single files when using filters" rclone error
+  - Root cause: Chain jobs had full file path as source_path with wildcard pattern
+  - Solution: Split path properly - directory as source_path, filename as file_pattern
+  - Created fix script to repair existing chain jobs in database
+  - Successfully tested batch transfer of 9 files from Local → SMB → Local
+  - All chain transfers completed successfully
 
 ## Recent Changes (Session of July 15, 2025)
 - Fixed CP-1: Template selection validation bug in CreateTransferForm
