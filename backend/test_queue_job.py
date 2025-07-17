@@ -35,7 +35,7 @@ async def main():
                 # Update job status
                 job.status = JobStatus.QUEUED
                 await db.commit()
-                print(f"Job status updated to QUEUED")
+                print("Job status updated to QUEUED")
                 
                 # Check queue
                 queue_length = await redis_manager.get_queue_length()

@@ -2,7 +2,7 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.settings import Settings, SETTING_KEYS
+from app.models.settings import SETTING_KEYS
 from app.services.settings_service import SettingsService
 
 

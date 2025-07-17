@@ -4,7 +4,6 @@ Create a transfer job from S3 to SMB share
 """
 import httpx
 import asyncio
-import json
 
 BASE_URL = "http://localhost:8000/api/v1"
 
@@ -48,7 +47,7 @@ async def create_transfer():
         
         if response.status_code in [200, 201]:
             job = response.json()
-            print(f"\n✅ Transfer job created successfully!")
+            print("\n✅ Transfer job created successfully!")
             print(f"   Job ID: {job['id']}")
             print(f"   Status: {job['status']}")
             

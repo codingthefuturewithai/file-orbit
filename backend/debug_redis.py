@@ -25,7 +25,7 @@ async def main():
         if redis_manager.redis:
             # Try to get all jobs in queue
             jobs = await redis_manager.redis.zrange(redis_manager.job_queue_key, 0, -1, withscores=True)
-            print(f"\nJobs in queue:")
+            print("\nJobs in queue:")
             for job_id, score in jobs:
                 print(f"  - Job ID: {job_id}, Score: {score}")
                 

@@ -1,16 +1,11 @@
 """Test that batch transfers with chain rules now work correctly"""
 import pytest
-import os
-import tempfile
-import shutil
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
-from unittest.mock import Mock, patch, AsyncMock
 
 from app.models.job import Job, JobStatus, JobType
 from app.models.transfer import Transfer, TransferStatus
 from app.models.endpoint import Endpoint
-from sqlalchemy import select
 from app.services.chain_job_service import ChainJobService
 
 

@@ -79,7 +79,7 @@ async def test_smb_syntax():
     # Test config dump to verify SMB config
     cmd = ['rclone', 'config', 'dump', '--config', rclone.config_file]
     
-    print(f"\nTesting SMB configuration syntax...")
+    print("\nTesting SMB configuration syntax...")
     
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
@@ -120,7 +120,7 @@ async def test_sftp_syntax():
     # Test config dump to verify SFTP config
     cmd = ['rclone', 'config', 'dump', '--config', rclone.config_file]
     
-    print(f"\nTesting SFTP configuration syntax...")
+    print("\nTesting SFTP configuration syntax...")
     
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)

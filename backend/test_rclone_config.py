@@ -4,7 +4,6 @@ Test rclone configuration generation for SMB/SFTP endpoints
 """
 import asyncio
 import sys
-import tempfile
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent))
 

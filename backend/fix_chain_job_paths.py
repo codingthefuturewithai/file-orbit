@@ -4,7 +4,7 @@ import os
 from sqlalchemy import select, update
 from app.core.database import AsyncSessionLocal
 from app.models import Job
-from app.models.job import JobStatus, JobType
+from app.models.job import JobType
 
 async def fix_chain_job_paths():
     async with AsyncSessionLocal() as db:

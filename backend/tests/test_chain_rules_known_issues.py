@@ -17,7 +17,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from httpx import AsyncClient
 from app.models.transfer_template import TransferTemplate, EventType
 from app.models.job import Job, JobStatus, JobType
-from app.models.endpoint import Endpoint, EndpointType
 from app.services.chain_job_service import ChainJobService
 
 

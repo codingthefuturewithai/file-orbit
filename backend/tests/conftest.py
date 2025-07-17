@@ -15,7 +15,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.main import app
 from app.core.database import Base, get_db
-from app.core.config import settings
 from app.services.redis_manager import redis_manager
 
 

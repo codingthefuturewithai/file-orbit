@@ -1,5 +1,5 @@
 import json
-from typing import Optional, Any, List
+from typing import Optional, List
 from redis import asyncio as aioredis
 
 from app.core.config import settings

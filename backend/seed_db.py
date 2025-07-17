@@ -6,7 +6,6 @@ Run this after init_db.py to populate with test data.
 import asyncio
 import sys
 from pathlib import Path
-from datetime import datetime
 import uuid
 
 sys.path.append(str(Path(__file__).parent))

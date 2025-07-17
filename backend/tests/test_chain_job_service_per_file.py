@@ -1,11 +1,8 @@
 """Tests for ChainJobService per-file chain creation functionality"""
 import pytest
-from datetime import datetime, timezone
 from unittest.mock import Mock, AsyncMock
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.job import Job, JobStatus, JobType
-from app.models.transfer import Transfer, TransferStatus
 from app.services.chain_job_service import ChainJobService
 
 

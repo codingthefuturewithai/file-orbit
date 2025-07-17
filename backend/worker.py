@@ -17,7 +17,7 @@ sys.path.append(str(Path(__file__).parent))
 
 from app.core.database import AsyncSessionLocal
 from app.core.config import settings
-from app.services.redis_manager import redis_manager, RedisManager
+from app.services.redis_manager import redis_manager
 from app.services.rclone_service import RcloneService
 from app.services.throttle_controller import ThrottleController
 from app.models.job import Job, JobStatus, JobType
@@ -231,7 +231,7 @@ class JobProcessor:
             logger.info(f"[FILE_TRACKING]   Successful: {len(successful_transfers)}")
             logger.info(f"[FILE_TRACKING]   Failed: {len(failed_transfers)}")
             if successful_transfers:
-                logger.info(f"[FILE_TRACKING]   Successful transfers:")
+                logger.info("[FILE_TRACKING]   Successful transfers:")
                 for idx, transfer in enumerate(successful_transfers):
                     logger.info(f"[FILE_TRACKING]     [{idx+1}] {transfer['file_name']} -> {transfer['destination_path']}")
             

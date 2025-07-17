@@ -51,8 +51,8 @@ async def fix_all_data():
                     )
                 )
                 fixed_count += 1
-                print(f"     - Changed type to SMB")
-                print(f"     - Cleaned config to only SMB fields")
+                print("     - Changed type to SMB")
+                print("     - Cleaned config to only SMB fields")
         
         print(f"   Fixed {fixed_count} corrupted endpoints\n")
         
@@ -99,7 +99,7 @@ async def fix_all_data():
         smb_endpoint = result.scalar_one_or_none()
         
         if smb_endpoint:
-            print(f"   SMB Destination Share:")
+            print("   SMB Destination Share:")
             print(f"     - Type: {smb_endpoint.type}")
             print(f"     - Host: {smb_endpoint.config.get('host')}")
             print(f"     - Share: {smb_endpoint.config.get('share')}")

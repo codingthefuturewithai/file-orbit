@@ -2,7 +2,6 @@
 S3 event monitoring service for handling S3 ObjectCreated events
 """
 import asyncio
-import json
 import logging
 from typing import Dict, Any, Optional
 from datetime import datetime

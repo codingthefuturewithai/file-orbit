@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from app.core.config import settings
 from app.api.api_v1.api import api_router
 from app.core.database import engine, Base
 from app.services.redis_manager import redis_manager

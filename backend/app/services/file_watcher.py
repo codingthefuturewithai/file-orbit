@@ -5,11 +5,11 @@ import asyncio
 import logging
 import os
 from pathlib import Path
-from typing import Dict, Any, Set, Optional
+from typing import Set, Optional
 from datetime import datetime
 
 from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler, FileCreatedEvent, FileModifiedEvent
+from watchdog.events import FileSystemEventHandler
 
 from app.models.transfer_template import EventType
 from app.services.event_monitor import EventMonitor

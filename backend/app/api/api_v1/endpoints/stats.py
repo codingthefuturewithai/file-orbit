@@ -3,7 +3,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
 from app.core.database import get_db
-from app.models.transfer import Transfer, TransferStatus
 from app.models.job import Job, JobStatus
 
 router = APIRouter()

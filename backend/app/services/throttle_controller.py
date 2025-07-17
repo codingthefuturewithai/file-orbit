@@ -1,5 +1,5 @@
 import asyncio
-from typing import Optional, Dict
+from typing import Dict
 import logging
 from datetime import datetime
 

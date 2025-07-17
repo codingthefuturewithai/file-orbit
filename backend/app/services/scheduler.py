@@ -3,12 +3,12 @@ Job scheduler service for executing scheduled transfers
 """
 import asyncio
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from typing import Optional, List
 from croniter import croniter
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select
 
 from app.core.database import get_db
 from app.models.job import Job, JobType, JobStatus

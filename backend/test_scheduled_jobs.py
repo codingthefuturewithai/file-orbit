@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent))
 
-from app.core.database import get_db, engine
+from app.core.database import get_db
 from app.models.job import Job, JobType, JobStatus
 from app.models.endpoint import Endpoint
 from app.services.scheduler import JobScheduler

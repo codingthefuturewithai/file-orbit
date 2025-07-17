@@ -1,13 +1,10 @@
 import httpx
 import asyncio
-import subprocess
 import json
 import tempfile
 import os
-import base64
 from typing import Dict, Any, Optional, List
 from datetime import datetime
-from pathlib import Path
 import logging
 
 from app.core.config import settings
@@ -76,7 +73,7 @@ class RcloneService:
             config_content += f"type = {config['type']}\n"
             
             if config['type'] == 's3':
-                config_content += f"provider = AWS\n"
+                config_content += "provider = AWS\n"
                 config_content += f"access_key_id = {config.get('access_key_id', '')}\n"
                 config_content += f"secret_access_key = {config.get('secret_access_key', '')}\n"
                 config_content += f"region = {config.get('region', '')}\n"
@@ -109,7 +106,7 @@ class RcloneService:
                         logger.error(f"Error running rclone obscure: {e}")
                         config_content += f"pass = {password}\n"  # Fallback to plain text
                 else:
-                    config_content += f"pass = \n"
+                    config_content += "pass = \n"
                 config_content += f"domain = {config.get('domain', 'WORKGROUP')}\n"
                 # Add share if specified (though typically share is in the path)
                 if config.get('share'):
@@ -184,7 +181,7 @@ class RcloneService:
                 if not f.get('IsDir', False)  # Only return files, not directories
             ]
             
-        except json.JSONDecodeError as e:
+        except json.JSONDecodeError:
             logger.error(f"Failed to parse rclone output: {stdout.decode()[:200]}...")
             return []
         except Exception as e:

@@ -25,7 +25,7 @@ async def fix_smb_endpoint():
             print("ERROR: SMB Destination Share endpoint not found!")
             return
         
-        print(f"Current state:")
+        print("Current state:")
         print(f"  Type: {endpoint.type}")
         print(f"  Config: {endpoint.config}")
         
@@ -57,7 +57,7 @@ async def fix_smb_endpoint():
             await db.commit()
             
             print("Endpoint fixed!")
-            print(f"  New Type: SMB")
+            print("  New Type: SMB")
             print(f"  New Config: {new_config}")
         else:
             print("\nEndpoint doesn't need fixing or already fixed.")

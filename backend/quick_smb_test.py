@@ -4,7 +4,6 @@ Quick test to verify SMB/SFTP endpoint creation through the API
 """
 import httpx
 import asyncio
-import json
 
 BASE_URL = "http://localhost:8000/api/v1"
 
@@ -80,13 +79,13 @@ async def test_endpoint_connection():
         sftp_ep = next((ep for ep in endpoints if ep['name'] == "Test SFTP Server"), None)
         
         if smb_ep:
-            print(f"\nTesting SMB endpoint connection...")
+            print("\nTesting SMB endpoint connection...")
             response = await client.post(f"{BASE_URL}/endpoints/{smb_ep['id']}/test")
             print(f"   Status: {response.status_code}")
             print(f"   Result: {response.json()}")
         
         if sftp_ep:
-            print(f"\nTesting SFTP endpoint connection...")
+            print("\nTesting SFTP endpoint connection...")
             response = await client.post(f"{BASE_URL}/endpoints/{sftp_ep['id']}/test")
             print(f"   Status: {response.status_code}")
             print(f"   Result: {response.json()}")

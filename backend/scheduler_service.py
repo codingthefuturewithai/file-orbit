@@ -11,7 +11,6 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent))
 
-from app.core.config import settings
 from app.services.redis_manager import redis_manager
 from app.services.scheduler import JobScheduler
 

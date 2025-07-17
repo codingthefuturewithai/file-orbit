@@ -14,13 +14,12 @@ import uuid
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from httpx import AsyncClient
-from unittest.mock import Mock, patch, AsyncMock
+from unittest.mock import patch, AsyncMock
 from app.models.transfer_template import TransferTemplate, EventType
 from app.models.job import Job, JobStatus, JobType
 from app.models.endpoint import Endpoint, EndpointType
 from app.services.chain_job_service import ChainJobService
 from app.services.redis_manager import redis_manager
-from app.core.database import get_db
 
 
 @pytest.fixture
@@ -208,7 +207,7 @@ class TestChainJobService:
                 parent_job_id=parent_job.id,
                 source_endpoint_id="primary-endpoint",
                 source_path="/primary/file.mp4",
-                destination_endpoint_id=f"backup-endpoint",
+                destination_endpoint_id="backup-endpoint",
                 destination_path=f"/backup{i}/file.mp4",
                 status=JobStatus.PENDING,
                 created_at=datetime.utcnow()
@@ -496,7 +495,6 @@ class TestChainJobStatusTransitions:
     ):
         """Test that worker queues chain jobs when parent succeeds"""
         from backend.worker import Worker
-        from sqlalchemy import select
         
         # Create completed parent job
         parent_job = Job(
